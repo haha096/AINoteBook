@@ -1,0 +1,118 @@
+/* 페이지 래퍼: 뷰포트 꽉 채우기 (모바일도 안전하게 100dvh) */
+.note-detail {
+    height: 100dvh;                /* <= 핵심 1: 화면 높이 고정 */
+    display: flex;
+    flex-direction: column;
+    background: #f7f7f8;
+}
+
+/* 헤더 고정 높이 */
+.nd-header {
+    height: 72px;                  /* <= 헤더 높이 */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    border-bottom: 1px solid #eaeaea;
+    background: #fff;
+}
+
+/* 로고/뒤로가기 버튼 등 스타일은 자유 */
+.nd-back {
+    height: 36px; padding: 0 10px; border-radius: 8px;
+    border: 1px solid #ddd; background:#fff; cursor:pointer;
+}
+.nd-logo { margin:0; font-size:20px; font-weight:700; }
+
+/* ────────────────────────────────────────────────────────── */
+/* 그리드: 헤더를 제외한 '남은' 세로 전체를 차지하게 */
+.nd-grid {
+    height: calc(100dvh - 72px);   /* <= 핵심 2: 남은 높이 전부 */
+    display: grid;
+    grid-template-columns: 280px 1fr 460px; /* 좌/중/우 */
+    gap: 24px;
+    padding: 24px;
+    min-height: 0;                 /* 스크롤 정상화 */
+    align-items: stretch;          /* 세로 꽉 채움 */
+}
+
+/* 좌측 패널 공통 */
+.nd-panel {
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+}
+.nd-panel-title {
+    display: flex; align-items: center; justify-content: space-between;
+    font-weight: 700; margin-bottom: 12px; line-height: 1; white-space: nowrap;
+}
+
+/* [+] 버튼: 고정 크기 + 줄어들지 않음 */
+.nd-add-btn {
+    flex: 0 0 32px;
+    width: 32px; height: 32px;
+    border: 1px solid #d8d8d8; border-radius: 8px;
+    background: #fff; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 18px; line-height: 32px; padding: 0;
+}
+.nd-add-btn:hover { background: #f5f5f5; }
+
+/* 소스 리스트 */
+.nd-list { list-style: none; padding: 0; margin: 0; }
+.nd-list-item {
+    padding: 8px 10px; margin-bottom: 6px;
+    border: 1px solid #eee; border-radius: 8px; background: #fafafa;
+}
+
+/* 가운데 본문 박스 */
+.nd-main { min-height: 0; }      /* 스크롤 정상화 */
+.nd-main-panel {
+    border: 1px solid #e5e5e5; border-radius: 12px;
+    background: #fff; padding: 16px 20px; height: 100%;
+}
+.nd-title { margin: 0 0 8px; font-size: 22px; }
+.nd-section { margin-top: 12px; }
+.nd-h2 { margin: 0 0 8px; font-size: 18px; }
+.nd-paragraph { margin: 0; color: #333; }
+
+/* ────────────────────────────────────────────────────────── */
+/* 우측 채팅: 그리드 높이를 100% 상속받아 '세로 꽉' */
+.nd-chat { min-height: 0; }      /* 중요 */
+.nd-chat-panel {
+    height: 100%;                  /* <= 핵심 3: 부모 높이 전부 */
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background: #fff;
+    display: flex; flex-direction: column;
+    min-height: 0;                 /* 내부 스크롤 정상화 */
+}
+
+/* 대화 스크롤 영역(남는 모든 공간) */
+.nd-chat-scroll {
+    flex: 1;                       /* <= 핵심 4: 남는 높이 모두 */
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+}
+.nd-chat-empty { color: #9aa0a6; text-align: center; margin-top: 24px; }
+
+/* 메시지 */
+.nd-msg { margin-bottom: 12px; }
+.nd-msg.user .nd-bubble { background: #eef4ff; }
+.nd-msg.ai   .nd-bubble { background: #f6f6f6; }
+.nd-bubble { display: inline-block; padding: 10px 12px; border-radius: 12px; }
+
+/* 인풋 바: 하단에 붙어있게 */
+.nd-chat-input {
+    display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee;
+}
+.nd-chat-input input {
+    flex: 1; height: 44px; border: 1px solid #ddd; border-radius: 10px; padding: 0 12px;
+}
+.nd-chat-input button {
+    height: 44px; padding: 0 14px; border-radius: 10px; background: #111; color: #fff;
+    border: none; cursor: pointer;
+}
+.nd-chat-input button:hover { background: #333; }

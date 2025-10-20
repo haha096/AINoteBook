@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Modal from "../../components/Modal";
 import starFilled from "../../assets/icons/채운 별.png";
 import starOutline from "../../assets/icons/안 채운 별.png";
+import {useNavigate} from "react-router-dom";
 
 type Note = {
     id: number;
@@ -27,7 +28,11 @@ const initialNotes: Note[] = [
 const formatDate = (d = new Date()) =>
     `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 
+
+
+
 export default function Notes_main() {
+
     // 상태 (중복 선언 금지)
     const [notes, setNotes] = useState<Note[]>(initialNotes);
     const [sortDesc, setSortDesc] = useState(true);
@@ -185,9 +190,18 @@ export default function Notes_main() {
     );
 }
 
+
 function NoteCard({ note, onToggleFav }: { note: Note; onToggleFav: (id: number) => void }) {
+    const navigate = useNavigate();
+
     return (
-        <div className={`note-card ${note.color}`}>
+        <div
+            className={`note-card ${note.color}`}
+            onClick={() => navigate(`/notes/${note.id}`)}           // ✅ 클릭 → 상세
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && navigate(`/notes/${note.id}`)}
+        >
             <div className="title">{note.title}</div>
             <div className="footer">
                 <span className="date">{note.date}</span>
