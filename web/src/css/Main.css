@@ -1,0 +1,112 @@
+/* 메인 전체 레이아웃 */
+.main-container {
+    position: relative;
+    min-height: 100vh;
+    background-color: #ffffff;
+    font-family: "Noto Sans KR", sans-serif;
+    text-align: center;
+    overflow-x: hidden;
+}
+
+/* 상단 로고 */
+.main-header {
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* 회원가입 버튼 */
+.signup-btn {
+    position: absolute;
+    top: 24px;
+    right: 40px;
+    padding: 10px 20px;
+    border: 1.5px solid #000;
+    border-radius: 8px;
+    background: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.signup-btn:hover {
+    background-color: #f7f7f7;
+}
+
+/* 중앙 영역 */
+.main-content {
+    padding-top: 120px;
+}
+
+.main-title {
+    font-size: 56px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.main-desc {
+    color: #555;
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+    background-color: #000;
+    color: #fff;
+    padding: 14px 36px;
+    font-size: 17px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+    background-color: #333;
+}
+
+/* 카드 섹션 */
+.card-container {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 24px;
+    margin-top: 80px;
+    flex-wrap: wrap;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 24px 20px;
+    width: 280px;
+    text-align: left;
+    background-color: #fff;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.card-desc {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}

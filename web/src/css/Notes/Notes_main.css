@@ -1,0 +1,162 @@
+/* 페이지 프레임 */
+.notes-page {
+    padding: 28px 24px 60px;
+    font-family: "Noto Sans KR", sans-serif;
+    color: #111;
+    background: #fff;
+}
+
+/* 헤더 */
+.notes-header {
+    display: grid;
+    grid-template-columns: 1fr auto; /* 왼쪽 로고, 오른쪽 버튼 */
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 10px;
+    margin-bottom: 22px;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    /* grid-column: 1 / 2;  // (기본값) */
+}
+
+.header-actions {
+    /* grid-column: 2 / 3;  // (기본값) */
+    justify-self: end;                /* ✅ 항상 오른쪽 끝 */
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;                  /* 좁아지면 버튼들만 줄바꿈 */
+}
+
+/* 정렬 버튼 (윤곽선) */
+.sort-btn, .create-btn { white-space: nowrap; }
+
+.sort-btn .arrow {
+    display: inline-block;
+    border: solid #111;
+    border-width: 0 2px 2px 0;
+    padding: 3px;
+    transform: rotate(45deg);
+    margin-left: 2px;
+}
+.sort-btn .arrow.up   { transform: rotate(-135deg); }
+.sort-btn .arrow.down { transform: rotate(45deg); }
+
+/* 만들기 버튼 (검정) */
+.create-btn {
+    padding: 10px 18px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* 톱니 */
+.gear-btn {
+    font-size: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* 섹션 */
+.section { margin-top: 18px; }
+.section-title {
+    margin: 8px 8px 14px;
+    font-size: 14px;
+    color: #444;
+}
+
+/* 카드 그리드 */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 26px;
+}
+
+/* 작은 화면: 2행 레이아웃 (로고 위, 버튼 아래/오른쪽) */
+@media (max-width: 720px) {
+    .notes-header {
+        grid-template-columns: 1fr;     /* 한 칼럼 */
+        grid-template-rows: auto auto;  /* 2행 */
+    }
+    .logo {
+        grid-column: 1 / -1;            /* 1행 */
+    }
+    .header-actions {
+        grid-column: 1 / -1;            /* 2행 */
+        justify-self: end;              /* ✅ 여전히 오른쪽 끝 */
+    }
+}
+
+/* 노트 카드 */
+.note-card {
+    border-radius: 14px;
+    padding: 22px 18px;
+    min-height: 120px;
+    background: #f6f6f6;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 파스텔 배경 */
+.note-card.pink   { background: #fbe1e1; }
+.note-card.yellow { background: #f7f8c9; }
+.note-card.green  { background: #dcf7e6; }
+.note-card.blue   { background: #d6e8ff; }
+
+.note-card .title {
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.note-card .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+}
+
+.note-card .date {
+    color: #333;
+    font-size: 13px;
+}
+
+/* 별 아이콘 */
+.star {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 카드 푸터(날짜-별) */
+.note-card .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+}
+
+/* ⚙️ 설정 아이콘도 고정 */
+.gear-img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    object-fit: contain;
+}
+
+.settings-rows{ display: flex; flex-direction: column; gap: 16px; }
+.settings-row{ display: grid; grid-template-columns: 100px 16px 1fr; align-items: center; gap: 8px; }
+.settings-key{ color: #333; }
+.settings-val{ color: #111; font-weight: 600; }
+.divider{ color: #bbb; }
+.settings-footer{ display: flex; justify-content: flex-end; margin-top: 6px; }
