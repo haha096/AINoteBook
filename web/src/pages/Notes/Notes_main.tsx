@@ -1,6 +1,6 @@
 import "../../css/Notes/Notes_main.css";
 import gear from "../../assets/icons/설정.png";
-import { useMemo, useState } from "react";
+import {useEffect, useMemo, useState} from "react";
 import Modal from "../../components/Modal";
 import starFilled from "../../assets/icons/채운 별.png";
 import starOutline from "../../assets/icons/안 채운 별.png";
@@ -9,43 +9,29 @@ import {useNavigate} from "react-router-dom";
 type Note = {
     id: number;
     title: string;
-    date: string; // yyyy.MM.dd
-    sources: number;
+    date: string;
     color: "pink" | "yellow" | "green" | "blue";
     favorite: boolean;
+    sources?: number;
 };
 
-const initialNotes: Note[] = [
-    { id: 1, title: "생성형 AI 3주차", date: "2025.10.11", sources: 2, color: "pink",   favorite: true  },
-    { id: 2, title: "생성형 AI 4주차", date: "2025.10.11", sources: 2, color: "yellow", favorite: true  },
-    { id: 3, title: "생성형 AI 5주차", date: "2025.10.11", sources: 2, color: "green",  favorite: true  },
-    { id: 4, title: "생성형 AI 3주차", date: "2025.10.11", sources: 2, color: "pink",   favorite: false },
-    { id: 5, title: "생성형 AI 4주차", date: "2025.10.11", sources: 2, color: "yellow", favorite: false },
-    { id: 6, title: "생성형 AI 5주차", date: "2025.10.11", sources: 2, color: "green",  favorite: false },
-    { id: 7, title: "생성형 AI 6주차", date: "2025.10.11", sources: 2, color: "blue",   favorite: false },
-];
-
-const formatDate = (d = new Date()) =>
-    `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-
-
-
+const API_BASE = "http://localhost:8080";
 
 export default function Notes_main() {
-
-    // 상태 (중복 선언 금지)
-    const [notes, setNotes] = useState<Note[]>(initialNotes);
+    const [notes, setNotes] = useState<Note[]>([]);
     const [sortDesc, setSortDesc] = useState(true);
     const [isAddOpen, setAddOpen] = useState(false);
-    const [isSettingsOpen, setSettingsOpen] = useState(false);
-
-    // “노트 추가” 모달 내부 폼 상태
     const [addTitle, setAddTitle] = useState("");
     const [addColor, setAddColor] = useState<Note["color"]>("pink");
 
-    // 파생 데이터
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // ✅ 아직 안쓰지만 UI 구조상 필요한 것들
+    const [isSettingsOpen, setSettingsOpen] = useState(false);
+
+
     const favorites = useMemo(() => notes.filter(n => n.favorite), [notes]);
-    const others = useMemo(() => notes.filter(n => !n.favorite), [notes]);
+    const others    = useMemo(() => notes.filter(n => !n.favorite), [notes]);
 
     const sortedFav = useMemo(
         () => [...favorites].sort((a, b) => (sortDesc ? b.id - a.id : a.id - b.id)),
@@ -57,25 +43,66 @@ export default function Notes_main() {
     );
 
     const toggleFavorite = (id: number) => {
-        setNotes(prev => prev.map(n => (n.id === id ? { ...n, favorite: !n.favorite } : n)));
+        setNotes((prev) =>
+            prev.map((n) =>
+                n.id === id ? { ...n, favorite: !n.favorite } : n
+            )
+        );
     };
 
-    const addNote = () => {
-        const title = addTitle.trim() || "새 노트";
-        const nextId = Math.max(...notes.map(n => n.id)) + 1;
-        const newNote: Note = {
-            id: nextId,
-            title,
-            date: formatDate(),
-            sources: 0,
-            color: addColor,
-            favorite: false,
-        };
-        setNotes(prev => [newNote, ...prev]);
-        // 폼 초기화 + 닫기
-        setAddTitle("");
-        setAddColor("pink");
-        setAddOpen(false);
+    // ✅ 1. 페이지 로드시 DB에서 노트 불러오기
+    useEffect(() => {
+        if (!user?.id) return; // 로그인 안 된 상태 가드
+        fetch(`${API_BASE}/api/notes/user/${user.id}`)
+            .then(res => res.json())
+            .then(data => {
+                const mapped = data.map((n: any) => ({
+                    id: n.id,
+                    title: n.title,
+                    date: n.createdAt?.slice(0,10).replace(/-/g, ".") ?? "----.--.--",
+                    color: (n.color ?? "pink") as Note["color"],
+                    favorite: false,
+                    sources: n.sources?.length ?? 0,
+                }));
+                setNotes(mapped);
+            })
+            .catch(err => console.error("노트 불러오기 실패:", err));
+    }, [user?.id]);
+    // ✅ 2. 새 노트 생성
+    const addNote = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/notes/create`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: addTitle.trim() || "새 노트",
+                    color: addColor,
+                    userId: user.id,
+                    sources: [],
+                }),
+            });
+            if (!res.ok) throw new Error("노트 생성 실패");
+            const data = await res.json();
+
+            setNotes((prev) => [
+                {
+                    id: data.id,
+                    title: data.title,
+                    date: data.createdAt?.slice(0, 10).replace(/-/g, ".") ?? "----.--.--",
+                    color: data.color,
+                    favorite: false,
+                    sources: data.sources?.length ?? 0,
+                },
+                ...prev,
+            ]);
+
+            setAddTitle("");
+            setAddColor("pink");
+            setAddOpen(false);
+        } catch (err) {
+            alert("노트 생성 중 오류 발생");
+            console.error(err);
+        }
     };
 
     return (
@@ -208,7 +235,7 @@ function NoteCard({ note, onToggleFav }: { note: Note; onToggleFav: (id: number)
                 <img
                     className="star"
                     src={note.favorite ? starFilled : starOutline}
-                    onClick={() => onToggleFav(note.id)}
+                    onClick={(e) => { e.stopPropagation(); onToggleFav(note.id); }} // ← 추가
                     alt={note.favorite ? "즐겨찾기 해제" : "즐겨찾기"}
                     draggable={false}
                     width={22}
