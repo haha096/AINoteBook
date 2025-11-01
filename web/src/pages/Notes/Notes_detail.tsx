@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import "../../css/Notes/Notes_detail.css";
 import NoteEditor from "./NoteEditor";
 
+// upload_11_02
 //type Section = { h2: string; body: string };
 
 const API_BASE = "http://localhost:8080";
