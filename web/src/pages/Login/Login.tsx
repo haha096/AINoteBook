@@ -1,57 +1,51 @@
-// import "../../css/Login/Login.css"
-// import {useNavigate} from "react-router-dom";
-//
-// export default function Login() {
-//     const navigate = useNavigate();
-//
-//     return (
-//         <div className="login-container">
-//             <div className="login-box">
-//                 <h1 className="login-title">AI NoteBook 로그인</h1>
-//
-//                 <p className="login-subtext">
-//                     GPT 기반 노트 서비스를 이용하려면 계정으로 로그인하세요.
-//                 </p>
-//
-//                 <form className="login-form">
-//                     <label className="login-label">아이디</label>
-//                     <input
-//                         type="text"
-//                         className="login-input"
-//                         placeholder="이메일 또는 아이디"
-//                     />
-//
-//                     <label className="login-label">비밀번호</label>
-//                     <input
-//                         type="password"
-//                         className="login-input"
-//                         placeholder="비밀번호 입력"
-//                     />
-//
-//                     <button className="login-btn">로그인</button>
-//                 </form>
-//
-//                 <div className="login-footer">
-//                     <p>
-//                         계정이 없으신가요?{" "}
-//                         <a onClick={() => navigate("/signup")} className="signup-link">
-//                             회원가입
-//                         </a>
-//                     </p>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
-
-
-
-
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../css/Login/Login.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
+console.log('API_BASE=', API_BASE);
+
+type LoginResponse =
+    | { token?: string; user?: { id: number; username: string; email?: string } }
+    | { id: number; username: string; email?: string }; // 백엔드가 user만 주는 경우 대비
+
 export default function Login() {
     const navigate = useNavigate();
+    const [form, setForm] = useState({ username: "", password: "" });
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState<string | null>(null);
+
+    const onSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!form.username || !form.password) {
+            setErr("아이디와 비밀번호를 입력하세요.");
+            return;
+        }
+        setErr(null);
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/users/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+            const data: LoginResponse = await res.json();
+            if (!res.ok) throw new Error((data as any)?.error || "로그인 실패");
+
+            // token/user 저장 (둘 다/둘 중 하나 올 수 있음)
+            const token = (data as any).token as string | undefined;
+            const user = (data as any).user ?? data;
+            if (token) localStorage.setItem("token", token);
+            if (user) localStorage.setItem("user", JSON.stringify(user));
+
+            navigate("/notes", { replace: true });
+        } catch (e: any) {
+            setErr(e.message || "로그인 실패");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="login-page">
@@ -60,29 +54,41 @@ export default function Login() {
             <div className="login-box">
                 <h1 className="login-title">로그인</h1>
 
-                <div className="login-form">
-                    <input type="text" placeholder="아이디" className="login-input" />
-                    <input type="password" placeholder="비밀번호" className="login-input" />
+                {/* ✅ 폼으로 감싸고 onSubmit 연결 */}
+                <form className="login-form" onSubmit={onSubmit}>
+                    <input
+                        type="text"
+                        placeholder="아이디"
+                        className="login-input"
+                        value={form.username}
+                        onChange={(e) =>
+                            setForm((p)=>
+                                ({ ...p, username: e.target.value }))}
+                    />
+                    <input
+                        type="password"
+                        placeholder="비밀번호"
+                        className="login-input"
+                        value={form.password}
+                        onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                    />
 
                     <div className="login-links">
-                        <a href="#">비밀번호 찾기</a>
+                        <a href="#" onClick={(e) => e.preventDefault()}>비밀번호 찾기</a>
                         <span>|</span>
-                        <a href="#">아이디 찾기</a>
+                        <a href="#" onClick={(e) => e.preventDefault()}>아이디 찾기</a>
                     </div>
 
+                    {/* 에러/로딩 표시 */}
+                    {err && <div style={{ color: "crimson", marginTop: 8 }}>{err}</div>}
+
                     <div className="login-footer">
-                        <a onClick={() => navigate("/signup")} className="signup-link">
-                            회원가입
-                        </a>
-                        <button
-                            type="button"
-                            className="login-btn"
-                            onClick={() => navigate("/notes")} // ✅ 로그인 후 노트 메인으로 이동
-                        >
-                            로그인
+                        <a onClick={() => navigate("/signup")} className="signup-link">회원가입</a>
+                        <button type="submit" className="login-btn" disabled={loading}>
+                            {loading ? "처리중..." : "로그인"}
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );
