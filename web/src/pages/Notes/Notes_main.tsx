@@ -6,6 +6,7 @@ import starFilled from "../../assets/icons/채운 별.png";
 import starOutline from "../../assets/icons/안 채운 별.png";
 import {useNavigate} from "react-router-dom";
 
+//AI 노트생성
 type Note = {
     id: number;
     title: string;
