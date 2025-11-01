@@ -21,11 +21,26 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users/signup", "/api/users/login").permitAll()
-                        .anyRequest().permitAll() // 초기 개발 편의: 이후에 적절히 잠그세요
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/users/signup", "/api/users/login",
+                                "/api/notes/**"                    // ← 추가
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }
+
+//    @Bean
+//    SecurityFilterChain filter(HttpSecurity http) throws Exception {
+//        http.csrf(csrf -> csrf.disable())
+//                .cors(Customizer.withDefaults())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/api/notes/**").permitAll()
+//                        .anyRequest().authenticated()
+//                );
+//        return http.build();
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -39,4 +54,6 @@ public class SecurityConfig {
         src.registerCorsConfiguration("/**", cfg);
         return src;
     }
+
+
 }

@@ -12,19 +12,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SummarizeService {
 
-    @Value("${openai.apiKey}") String apiKey;
+    @Value("${OPENAI_API_KEY:}")
+    private String apiKey;
 
-    public List<NoteSectionEntity> summarize(NoteEntity note, String mergedText) {
-        String prompt = """
-    아래 강의/자료 내용을 바탕으로 한국어 노트필기 섹션을 만들어 주세요.
-    - 섹션 4~7개, 각 섹션: h2(짧은 소제목) + 본문(3~6문장)
-    - 중요 용어는 **굵게**
-    자료:
-    """ + mergedText;
+    public List<NoteSectionEntity> summarize(NoteEntity note, String fullText) {
+        if (apiKey == null || apiKey.isBlank()) {
+            System.out.println("⚠️ [SummarizeService] OpenAI API 키 없음 → 더미 요약 사용");
+            var dummy = new NoteSectionEntity();
+            dummy.setH2("요약 (임시)");
+            dummy.setBody("OpenAI API 키가 없어 요약을 생략했습니다. (" + fullText.length() + "자)");
+            return List.of(dummy);
+        }
 
-        // OpenAI Chat Completions 호출 (gpt-4o-mini 등)
-        // 응답을 파싱해 sections[]로 만들고 NoteSectionEntity 목록 생성
-        // ordIdx=0..N, h2/body 세팅
-        return List.of(/* ... */);
+        // TODO: 실제 OpenAI 호출 로직 (나중에)
+        return List.of();
     }
 }
