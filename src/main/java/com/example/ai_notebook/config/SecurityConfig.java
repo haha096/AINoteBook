@@ -16,36 +16,26 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST,
-                                "/api/users/signup", "/api/users/login",
-                                "/api/notes/**"                    // ← 추가
+                                "/api/users/signup", "/api/users/login"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/notes/**").permitAll()
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
-
-//    @Bean
-//    SecurityFilterChain filter(HttpSecurity http) throws Exception {
-//        http.csrf(csrf -> csrf.disable())
-//                .cors(Customizer.withDefaults())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/notes/**").permitAll()
-//                        .anyRequest().authenticated()
-//                );
-//        return http.build();
-//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:5173"));
+        cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
@@ -54,6 +44,4 @@ public class SecurityConfig {
         src.registerCorsConfiguration("/**", cfg);
         return src;
     }
-
-
 }

@@ -1,157 +1,3 @@
-/*!* 페이지 래퍼: 뷰포트 꽉 채우기 (모바일도 안전하게 100dvh) *!*/
-/*.note-detail {*/
-/*    height: 100dvh;                !* <= 핵심 1: 화면 높이 고정 *!*/
-/*    display: flex;*/
-/*    flex-direction: column;*/
-/*    background: #f7f7f8;*/
-/*}*/
-
-/*!* 헤더 고정 높이 *!*/
-/*.nd-header {*/
-/*    height: 72px;                  !* <= 헤더 높이 *!*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    gap: 16px;*/
-/*    padding: 0 20px;*/
-/*    border-bottom: 1px solid #eaeaea;*/
-/*    background: #fff;*/
-/*}*/
-
-/*!* 로고/뒤로가기 버튼 등 스타일은 자유 *!*/
-/*.nd-back {*/
-/*    height: 36px; padding: 0 10px; border-radius: 8px;*/
-/*    border: 1px solid #ddd; background:#fff; cursor:pointer;*/
-/*}*/
-/*.nd-logo { margin:0; font-size:20px; font-weight:700; }*/
-
-/*!* ────────────────────────────────────────────────────────── *!*/
-/*!* 그리드: 헤더를 제외한 '남은' 세로 전체를 차지하게 *!*/
-/*.nd-grid {*/
-/*    height: calc(100dvh - 72px);   !* <= 핵심 2: 남은 높이 전부 *!*/
-/*    display: grid;*/
-/*    grid-template-columns: 280px 1fr 460px; !* 좌/중/우 *!*/
-/*    gap: 24px;*/
-/*    padding: 24px;*/
-/*    min-height: 0;                 !* 스크롤 정상화 *!*/
-/*    align-items: stretch;          !* 세로 꽉 채움 *!*/
-/*}*/
-
-/*!* 좌측 패널 공통 *!*/
-/*.nd-panel {*/
-/*    border: 1px solid #e5e5e5;*/
-/*    border-radius: 12px;*/
-/*    padding: 12px;*/
-/*    background: #fff;*/
-/*}*/
-/*.nd-panel-title {*/
-/*    display: flex; align-items: center; justify-content: space-between;*/
-/*    font-weight: 700; margin-bottom: 12px; line-height: 1; white-space: nowrap;*/
-/*}*/
-
-/*!* [+] 버튼: 고정 크기 + 줄어들지 않음 *!*/
-/*.nd-add-btn {*/
-/*    flex: 0 0 32px;*/
-/*    width: 32px; height: 32px;*/
-/*    border: 1px solid #d8d8d8; border-radius: 8px;*/
-/*    background: #fff; cursor: pointer;*/
-/*    display: inline-flex; align-items: center; justify-content: center;*/
-/*    font-size: 18px; line-height: 32px; padding: 0;*/
-/*}*/
-/*.nd-add-btn:hover { background: #f5f5f5; }*/
-
-/*!* 소스 리스트 *!*/
-/*.nd-list { list-style: none; padding: 0; margin: 0; }*/
-/*.nd-list-item {*/
-/*    padding: 8px 10px; margin-bottom: 6px;*/
-/*    border: 1px solid #eee; border-radius: 8px; background: #fafafa;*/
-/*}*/
-
-/*!* 가운데 본문 박스 *!*/
-/*.nd-main { min-height: 0; }      !* 스크롤 정상화 *!*/
-/*.nd-main-panel {*/
-/*    border: 1px solid #e5e5e5; border-radius: 12px;*/
-/*    background: #fff; padding: 16px 20px; height: 100%;*/
-/*}*/
-/*.nd-title { margin: 0 0 8px; font-size: 22px; }*/
-/*.nd-section { margin-top: 12px; }*/
-/*.nd-h2 { margin: 0 0 8px; font-size: 18px; }*/
-/*.nd-paragraph { margin: 0; color: #333; }*/
-
-/*!* ────────────────────────────────────────────────────────── *!*/
-/*!* 우측 채팅: 그리드 높이를 100% 상속받아 '세로 꽉' *!*/
-/*.nd-chat { min-height: 0; }      !* 중요 *!*/
-/*.nd-chat-panel {*/
-/*    height: 100%;                  !* <= 핵심 3: 부모 높이 전부 *!*/
-/*    border: 1px solid #e5e5e5;*/
-/*    border-radius: 12px;*/
-/*    background: #fff;*/
-/*    display: flex; flex-direction: column;*/
-/*    min-height: 0;                 !* 내부 스크롤 정상화 *!*/
-/*}*/
-
-/*!* 대화 스크롤 영역(남는 모든 공간) *!*/
-/*.nd-chat-scroll {*/
-/*    flex: 1;                       !* <= 핵심 4: 남는 높이 모두 *!*/
-/*    min-height: 0;*/
-/*    overflow: auto;*/
-/*    padding: 16px;*/
-/*}*/
-/*.nd-chat-empty { color: #9aa0a6; text-align: center; margin-top: 24px; }*/
-
-/*!* 메시지 *!*/
-/*.nd-msg { margin-bottom: 12px; }*/
-/*.nd-msg.user .nd-bubble { background: #eef4ff; }*/
-/*.nd-msg.ai   .nd-bubble { background: #f6f6f6; }*/
-/*.nd-bubble { display: inline-block; padding: 10px 12px; border-radius: 12px; }*/
-
-/*!* 인풋 바: 하단에 붙어있게 *!*/
-/*.nd-chat-input {*/
-/*    display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee;*/
-/*}*/
-/*.nd-chat-input input {*/
-/*    flex: 1; height: 44px; border: 1px solid #ddd; border-radius: 10px; padding: 0 12px;*/
-/*}*/
-/*.nd-chat-input button {*/
-/*    height: 44px; padding: 0 14px; border-radius: 10px; background: #111; color: #fff;*/
-/*    border: none; cursor: pointer;*/
-/*}*/
-/*.nd-chat-input button:hover { background: #333; }*/
-
-/*.nd-title-editable {*/
-/*    outline: none;*/
-/*}*/
-/*.nd-title-editable:focus {*/
-/*    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);*/
-/*}*/
-/*.nd-badge { font-size:12px; padding:4px 8px; border-radius:12px; background:#eee; }*/
-/*.nd-badge-dim { opacity:.7; }*/
-/*.nd-badge-ok { background:#e6fff1; }*/
-
-/*.nd-title-input-h1 {*/
-/*    width: 100%;*/
-/*    border: none;*/
-/*    outline: none;*/
-/*    font-size: 28px;*/
-/*    font-weight: 800;*/
-/*    line-height: 1.3;*/
-/*    padding: 6px 4px;*/
-/*    background: transparent;*/
-/*}*/
-
-/*.nd-title-input-h1::placeholder {*/
-/*    color: #aaa;*/
-/*}*/
-
-/*.nd-add-btn{width:28px;height:28px;border:none;border-radius:10%;*/
-/*    background:#111;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}*/
-/*.nd-list{list-style:none;margin:0;padding:0}*/
-/*.nd-list-item{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:center;padding:6px 8px;border-radius:8px}*/
-/*.nd-list-item:hover{background:#f6f6f6}*/
-/*.nd-file-ico{font-size:16px}*/
-/*.nd-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}*/
-/*.nd-source-empty{color:#666;padding:8px 0}*/
-
-
 /* ===== 공통 ===== */
 :root{
     --hdr-h: 64px;       /* 헤더 높이 */
@@ -313,4 +159,141 @@ html, body, #root {
     .nd-grid{ grid-template-columns: 1fr; }
     .nd-side{ order:1; }
     .nd-main{ order:2; }
+}
+
+
+
+/* ===== ChatGPT-like panel ===== */
+.cgpt-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.cgpt-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.cgpt-title { font-weight: 700; }
+.cgpt-sub { font-size: 12px; color: #6b7280; }
+
+.cgpt-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+    background: #fafafa;
+}
+
+.cgpt-empty {
+    color: #6b7280;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 24px;
+}
+.cgpt-hint { margin-top: 6px; font-size: 12px; color: #9ca3af; }
+
+.cgpt-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cgpt-row.user { justify-content: flex-end; }
+.cgpt-row.user .cgpt-avatar { order: 2; }
+.cgpt-row.user .cgpt-bubble { order: 1; }
+
+.cgpt-avatar {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #eef2ff;
+    font-size: 16px;
+}
+
+.cgpt-bubble {
+    position: relative;
+    max-width: 75%;
+    padding: 10px 12px 28px; /* 아래 여백: copy 버튼 자리 */
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.cgpt-bubble.user {
+    background: #2563eb;
+    color: #fff;
+    border-top-right-radius: 4px;
+    padding-bottom: 8px !important;
+}
+.cgpt-bubble.ai {
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+    border-top-left-radius: 4px;
+}
+
+.cgpt-copy {
+    position: absolute;
+    right: 8px;
+    bottom: 6px;
+    font-size: 12px;
+    padding: 2px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #374151;
+}
+.cgpt-copy:hover { background: #f3f4f6; }
+
+.cgpt-inputbar {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #f0f0f0;
+    background: #fff;
+}
+.cgpt-input {
+    flex: 1;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: 0 12px;
+    outline: none;
+}
+.cgpt-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+.cgpt-send {
+    height: 38px;
+    min-width: 84px;
+    border-radius: 10px;
+    background: #111827;
+    color: #fff;
+    border: none;
+}
+.cgpt-send:disabled { opacity: .6; }
+
+/* typing dots */
+.cgpt-typing .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: #9ca3af;
+    animation: cgpt-bounce 1.2s infinite ease-in-out;
+}
+.cgpt-typing .dot:nth-child(2) { animation-delay: .15s; }
+.cgpt-typing .dot:nth-child(3) { animation-delay: .3s; }
+@keyframes cgpt-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: .6; }
+    40%          { transform: scale(1.0); opacity: 1; }
 }
