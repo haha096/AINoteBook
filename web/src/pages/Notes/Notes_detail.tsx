@@ -5,6 +5,9 @@ import NoteEditor from "./NoteEditor";
 
 const API_BASE = "http://localhost:8080";
 
+//AI와 자료 업로드를 수정한 프로젝트
+//upload_11_10_v2보다 나중에 만들었음
+
 /** 서버 반환 모델 (DB 기준) */
 type SourceRow = {
     id: number;
