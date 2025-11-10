@@ -21,6 +21,9 @@ public class NoteSourceEntity {
     private String name;   // 표시용 이름
     private String value;  // 파일경로 / URL / Notion pageId
 
+    @Column(name = "openai_file_id", length = 120)
+    private String openaiFileId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "note_id")
     @JsonIgnore

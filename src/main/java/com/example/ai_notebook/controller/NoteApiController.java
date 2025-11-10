@@ -1,86 +1,76 @@
 package com.example.ai_notebook.controller;
 
+import com.example.ai_notebook.entity.NoteEntity;
+import com.example.ai_notebook.entity.NoteSourceEntity;
+import com.example.ai_notebook.entity.SourceType;
+import com.example.ai_notebook.repository.NoteRepository;
+import com.example.ai_notebook.repository.NoteSourceRepository;
+import com.example.ai_notebook.service.OpenAiService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@RestController
+//@RestController
+//@RequiredArgsConstructor
 public class NoteApiController {
 
-    @GetMapping("/api/notes/{id}")
-    public Map<String, Object> getNote(@PathVariable Long id) {
-        Map<String, Object> dto = new HashMap<>();
-        dto.put("id", id);
-        dto.put("title", "노트");     // 초기 제목
-        return dto;                   // 200 OK
-    }
-
-    /** 본문/제목 임시 저장 (프론트 Ctrl+S가 호출) */
-    @PostMapping("/api/notes/{id}/content")
-    public Map<String, Object> saveContent(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body
-    ) {
-        // TODO: DB 저장 로직으로 교체
-        System.out.println("[SAVE] note " + id + " :: title=" + body.get("title"));
-        Map<String, Object> res = new HashMap<>();
-        res.put("ok", true);
-        return res;
-    }
-
-    /** 파일 업로드 (소스 패널 + 버튼) */
-    @PostMapping(value = "/api/notes/{id}/sources/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> uploadSource(@PathVariable Long id,
-                                            @RequestPart("file") MultipartFile file) throws Exception {
-        Path dir = Paths.get("uploads").resolve(String.valueOf(id));
-        Files.createDirectories(dir);
-
-        String original = Objects.requireNonNullElse(file.getOriginalFilename(), "file");
-        // 확장자 분리
-        int dot = original.lastIndexOf('.');
-        String base = (dot >= 0) ? original.substring(0, dot) : original;
-        String ext  = (dot >= 0) ? original.substring(dot) : "";
-
-        // 기본은 원래 이름
-        Path saveTo = dir.resolve(original);
-
-        // 중복이면 base (1).ext, base (2).ext … 로 찾기
-        int i = 1;
-        while (Files.exists(saveTo)) {
-            saveTo = dir.resolve(base + " (" + i + ")" + ext);
-            i++;
-        }
-
-        Files.copy(file.getInputStream(), saveTo);
-
-        String storedName = saveTo.getFileName().toString();
-        Map<String, Object> res = new HashMap<>();
-        res.put("name", storedName); // 프론트에 보이는 이름
-        res.put("path", "/uploads/" + id + "/" + storedName);
-        return res;
-    }
-
-    @GetMapping("/api/notes/{id}/sources")
-    public List<Map<String, Object>> listSources(@PathVariable Long id) throws Exception {
-        Path dir = Paths.get("uploads").resolve(String.valueOf(id));
-        if (!Files.exists(dir)) return List.of();
-
-        try (var s = Files.list(dir)) {
-            return s.filter(Files::isRegularFile)
-                    .map(p -> {
-                        String fileName = p.getFileName().toString();
-                        Map<String,Object> m = new HashMap<>();
-                        m.put("name", fileName);
-                        // 프론트에서 클릭해 열 수 있는 경로 (아래 1-B 설정과 세트)
-                        m.put("path", "/uploads/" + id + "/" + fileName);
-                        return m;
-                    })
-                    .toList();
-        }
-    }
+//    private final NoteRepository noteRepo;
+//    private final NoteSourceRepository srcRepo;
+//    private final OpenAiService openAiService;
+//
+//    @Value("${app.upload.base:${user.home}/ai-notebook/uploads}")
+//    private String uploadBase;
+//
+//    @GetMapping("/api/notes/{id}")
+//    public Map<String, Object> getNote(@PathVariable Long id) {
+//        var dto = new HashMap<String, Object>();
+//        dto.put("id", id);
+//        dto.put("title", "노트");
+//        return dto;
+//    }
+//
+//    @PostMapping("/api/notes/{id}/content")
+//    public Map<String, Object> saveContent(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+//        System.out.println("[SAVE] note " + id + " :: title=" + body.get("title"));
+//        return Map.of("ok", true);
+//    }
+//
+//    /** ✅ 파일 업로드 (DB 저장 + OpenAI Files 업로드) */
+//    @PostMapping(value = "/api/notes/{id}/sources/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public NoteSourceEntity uploadSource(@PathVariable Long id,
+//                                         @RequestParam("file") MultipartFile file) throws Exception {
+//        NoteEntity note = noteRepo.findById(id).orElseThrow();
+//
+//        // 노트별 폴더
+//        Path dir = Paths.get(uploadBase, String.valueOf(id));
+//        Files.createDirectories(dir);
+//
+//        String original = Objects.requireNonNullElse(file.getOriginalFilename(), "file");
+//        String safeName = UUID.randomUUID() + "_" + original;
+//        Path saveTo = dir.resolve(safeName);
+//        Files.copy(file.getInputStream(), saveTo, StandardCopyOption.REPLACE_EXISTING);
+//
+//        // OpenAI Files 업로드 → file-xxxx
+//        String openAiFileId = openAiService.uploadFile(saveTo);
+//
+//        // DB 저장
+//        NoteSourceEntity src = new NoteSourceEntity();
+//        src.setNote(note);
+//        src.setType(SourceType.FILE);
+//        src.setName(original);
+//        src.setValue(saveTo.toString());     // 로컬 경로
+//        src.setOpenaiFileId(openAiFileId);   // 중요
+//        return srcRepo.save(src);
+//    }
+//
+//    /** ✅ 소스 목록 조회 (DB 기준) */
+//    @GetMapping("/api/notes/{id}/sources")
+//    public List<NoteSourceEntity> listSources(@PathVariable Long id) {
+//        return srcRepo.findByNoteId(id);
+//    }
 }
