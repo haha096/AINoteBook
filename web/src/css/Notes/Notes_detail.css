@@ -51,9 +51,11 @@ html, body, #root {
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 1px 2px rgba(0,0,0,.04);
-    overflow: auto;         /* 칼럼별 스크롤 */
+    overflow: hidden;    /* ← 칼럼 자체는 숨기고… */
     overscroll-behavior: contain;
 }
+
+
 
 /* ===== 좌측 소스 패널 ===== */
 .nd-panel{ padding: 16px; }
@@ -161,7 +163,62 @@ html, body, #root {
     .nd-main{ order:2; }
 }
 
+.nd-side-split {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
 
+/* 소스, 비디오 각각 독립 스크롤 박스 */
+.nd-side-section{
+    flex: 1;
+    min-height: 0;
+    /* 기존 overflow-y: auto; 를 없애고 */
+    overflow: hidden;      /* ← 패널 내부가 스크롤 */
+}
+
+/* 패널 레이아웃: 제목(고정) + 본문(스크롤) */
+.nd-panel{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+}
+
+/* 제목줄은 고정 */
+.nd-panel-title{
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+}
+
+/* 목록이 들어가는 영역만 스크롤 */
+.nd-panel-body{
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;          /* ← 여기만 스크롤 */
+    padding: 8px 12px 12px;
+}
+
+/* 보기 좋게 약간의 간격/정렬 */
+.nd-list{ list-style: none; margin: 0; padding: 0; }
+.nd-list-item{
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 4px;
+}
+.nd-list-icon{ width: 24px; height: 24px; flex: 0 0 24px; }
+.nd-list-text{ line-height: 24px; }
+
+#nd-side_nd-side-split{
+    background: #f5f6f8;
+}
 
 /* ===== ChatGPT-like panel ===== */
 .cgpt-chat {

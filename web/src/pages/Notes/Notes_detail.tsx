@@ -2,17 +2,21 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "../../css/Notes/Notes_detail.css";
 import NoteEditor from "./NoteEditor";
+import SourceList from "./components/SourceList";
+import type { SourceRow } from "./components/SourceList";
+import VideoList from "./components/VideoList";
+import type { VideoItem } from "./components/VideoList";
 
 const API_BASE = "http://localhost:8080";
 
 /** 서버 반환 모델 (DB 기준) */
-type SourceRow = {
-    id: number;
-    type: "FILE" | "URL" | "NOTION";
-    name: string;
-    value: string;           // 서버 로컬 경로 문자열
-    openaiFileId?: string;   // "file-xxxx" (있으면 질문에 사용)
-};
+// type SourceRow = {
+//     id: number;
+//     type: "FILE" | "URL" | "NOTION";
+//     name: string;
+//     value: string;           // 서버 로컬 경로 문자열
+//     openaiFileId?: string;   // "file-xxxx" (있으면 질문에 사용)
+// };
 
 
 export default function NoteDetail() {
@@ -30,10 +34,10 @@ export default function NoteDetail() {
     const fileRef = useRef<HTMLInputElement>(null);
     const openPicker = () => fileRef.current?.click();
 
+
     // 우측: 채팅(UI 그대로—빈 영역에 메시지만 채움)
     const [chatInput, setChatInput] = useState("");
     const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
-
 
     // ───────────────────────────────────────────────────────────────
     // API helpers
@@ -139,6 +143,22 @@ export default function NoteDetail() {
         }
     };
 
+    //영상 리스트
+    //좌측: 영상 리스트 (UI 그대로)
+    const [videos, setVideos] = useState<VideoItem[]>([]);
+
+    const onAddVideo = () => {
+        const url = window.prompt("YouTube URL을 입력하세요");
+        if (!url) return;
+
+        const title = window.prompt("제목을 입력하세요") || "새 영상";
+
+        setVideos(prev => [
+            { id: crypto.randomUUID(), title, url },
+            ...prev
+        ]);
+    };
+
 // 질문 상태
     const [asking, setAsking] = useState(false);
 
@@ -212,55 +232,34 @@ export default function NoteDetail() {
 
             <div className="nd-grid">
                 {/* 좌측: 소스/영상 (UI 동일) */}
-                <aside className="nd-side">
-                    <div className="nd-panel">
-                        <div className="nd-panel-title">
-                            <span>소스</span>
-                            <button className="nd-add-btn" onClick={openPicker} title="파일 추가">+</button>
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                hidden
-                                multiple
-                                accept="
-                  application/pdf,
-                  application/vnd.openxmlformats-officedocument.presentationml.presentation,
-                  application/vnd.ms-powerpoint,
-                  application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-                  application/msword,
-                  application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                  application/vnd.ms-excel,
-                  text/csv,
-                  text/plain,
-                  text/markdown
-                "
-                                onChange={onPickFiles}
-                            />
-                        </div>
+                <aside className="nd-side nd-side-split" id="nd-side_nd-side-split">
 
-                        {sources.length === 0 ? (
-                            <div className="nd-source-empty">소스 없음</div>
-                        ) : (
-                            <ul className="nd-list">
-                                {sources.map((s) => (
-                                    <li key={s.id} className="nd-list-item">
-                                        {s.type === "FILE" ? (
-                                            <a href={s.value} target="_blank" rel="noreferrer">{s.name}</a>
-                                        ) : (
-                                            s.name
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+                    {/* 소스 파트 */}
+                    <div className="nd-side-section">
+                        <SourceList
+                            sources={sources}
+                            onClickAdd={openPicker}
+                        />
                     </div>
 
-                    <br />
+                    {/* 숨겨진 파일 입력 */}
+                    <input
+                        ref={fileRef}
+                        type="file"
+                        hidden
+                        multiple
+                        accept="application/pdf,..."
+                        onChange={onPickFiles}
+                    />
 
-                    <div className="nd-panel">
-                        <div className="nd-panel-title">영상</div>
-                        <div className="nd-video-empty">영상 소스 없음</div>
+                    {/* 영상 파트 */}
+                    <div className="nd-side-section">
+                        <VideoList
+                            videos={videos}
+                            onClickAdd={onAddVideo}
+                        />
                     </div>
+
                 </aside>
 
                 {/* 가운데: 본문 (UI 동일) */}

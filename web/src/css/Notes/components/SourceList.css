@@ -1,0 +1,46 @@
+.nd-list-icon{
+    width: 26px;
+    height: 26px;
+    margin-right: 12px;
+}
+
+.nd-list-text{
+    text-align: center;
+}
+
+/* 리스트 불릿 제거 & 기본 여백 제거 */
+.nd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* 각 항목 레이아웃: 아이콘-텍스트 가로 배치 + 세로 중앙정렬 */
+.nd-list-item-row {
+    display: flex;
+    align-items: center;     /* ← 아이콘과 텍스트 세로 중앙 정렬 */
+    gap: 5px;               /* 아이콘-텍스트 간격 */
+    padding: 10px 6px;       /* 수직 간격(행 높이) 넓힘 */
+    border-radius: 8px;
+}
+
+/* 항목 사이 간격(수직 여백) */
+.nd-list-item-row + .nd-list-item-row {
+    margin-top: 1px;
+}
+
+/* 아이콘 크기 */
+.nd-list-icon {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;          /* 레이아웃 흔들림 방지 */
+    object-fit: contain;
+    opacity: .95;
+}
+
+/* 텍스트 스타일 */
+.nd-list-text {
+    font-size: 15px;
+    color: #1f2937;
+    line-height: 1.4;        /* 가독성 */
+}
