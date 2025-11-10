@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.*;
 import java.util.*;
 
+//NoteApiController를 없애고 깔끔하게 NoteController로 함
+
 @RestController
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
