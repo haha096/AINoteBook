@@ -12,6 +12,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 
+//Gemini의 유튜브 영상추천 기능
+
 @Service
 @RequiredArgsConstructor
 public class GeminiRerankService {
