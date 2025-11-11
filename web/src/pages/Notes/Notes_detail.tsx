@@ -1,3 +1,5 @@
+// Notes_detail.tsx (전체 코드)
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "../../css/Notes/Notes_detail.css";
@@ -5,7 +7,7 @@ import NoteEditor from "./NoteEditor";
 import SourceList from "./components/SourceList";
 import type { SourceRow } from "./components/SourceList";
 import VideoList from "./components/VideoList";
-import type { VideoItem } from "./components/VideoList";
+import type { VideoItem } from "./components/VideoList"; // ◀ VideoItem 타입 가져오기
 
 const API_BASE = "http://localhost:8080";
 
@@ -69,6 +71,33 @@ export default function NoteDetail() {
         return r.json();
     }
 
+    // ▼ [기능 2] Gemini 영상 추천 API (백엔드에 구현 필요)
+    async function fetchRecommendedVideos(noteId: string): Promise<VideoItem[]> {
+        // TODO: 백엔드 API 엔드포인트 구현 필요
+        const r = await fetch(`${API_BASE}/api/notes/${noteId}/recommend-videos`, {
+            method: "POST", // 소스 기반이므로 POST가 적절할 수 있음
+            credentials: "include",
+        });
+        if (!r.ok) throw new Error(`영상 추천 실패: ${r.status}`);
+
+        // 백엔드는 { id: string, title: string, url: string }[] 형태를 반환해야 함
+        return r.json();
+    }
+
+    // ▼ [기능 3] YouTube 영상 분석 API (백엔드에 구현 필요)
+    async function analyzeVideoUrl(url: string): Promise<{ summary: string }> {
+        // TODO: 백엔드 API 엔드포인트 구현 필요
+        const r = await fetch(`${API_BASE}/api/videos/analyze?url=${encodeURIComponent(url)}`, {
+            method: "POST",
+            credentials: "include",
+        });
+        if (!r.ok) throw new Error(`영상 분석 실패: ${r.status}`);
+
+        // 백엔드는 { summary: "..." } 형태를 반환해야 함
+        return r.json();
+    }
+
+
     // ───────────────────────────────────────────────────────────────
     // 초기 로드: 소스 목록만 DB 기준으로 읽기 (UI 변경 없음)
     // ───────────────────────────────────────────────────────────────
@@ -124,7 +153,7 @@ export default function NoteDetail() {
     // 업로드 상태
     const [uploading, setUploading] = useState(false);
 
-// 파일 선택 → 업로드 → DB 반영
+    // 파일 선택 → 업로드 → DB 반영
     const onPickFiles: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
         const input = e.currentTarget;
         const files = Array.from(input.files ?? []);
@@ -143,26 +172,68 @@ export default function NoteDetail() {
         }
     };
 
-    //영상 리스트
-    //좌측: 영상 리스트 (UI 그대로)
+    // ▼ [기능 2] 영상 추천 상태
     const [videos, setVideos] = useState<VideoItem[]>([]);
+    const [recommending, setRecommending] = useState(false); // 추천 로딩 상태
 
-    const onAddVideo = () => {
-        const url = window.prompt("YouTube URL을 입력하세요");
-        if (!url) return;
+    // ▼ [기능 2] 영상 추천 핸들러 (기존 onAddVideo 대체)
+    const handleRecommendVideos = async () => {
+        if (!id || recommending) return;
 
-        const title = window.prompt("제목을 입력하세요") || "새 영상";
-
-        setVideos(prev => [
-            { id: crypto.randomUUID(), title, url },
-            ...prev
-        ]);
+        setRecommending(true);
+        try {
+            const recommendedVideos = await fetchRecommendedVideos(id);
+            setVideos(recommendedVideos); // 추천받은 영상으로 목록 교체
+        } catch (err: any) {
+            alert(`영상 추천 중 오류 발생: ${err.message}`);
+            setVideos([]);
+        } finally {
+            setRecommending(false);
+        }
     };
 
-// 질문 상태
+    // ▼ [기능 3] 영상 분석 상태
+    const [analyzingVideoId, setAnalyzingVideoId] = useState<string | null>(null);
+
+    // ▼ [기능 3] 영상 분석 핸들러
+    const handleAnalyzeVideo = async (video: VideoItem) => {
+        if (analyzingVideoId) return; // 이미 다른 영상 분석 중
+
+        setAnalyzingVideoId(video.id);
+        try {
+            const { summary } = await analyzeVideoUrl(video.url);
+
+            // 분석 결과를 AI 채팅창에 추가
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    text: `[영상 분석 완료: ${video.title}]\n\n${summary}`
+                },
+            ]);
+
+            // (선택) 채팅창이 맨 아래로 스크롤되도록 함
+            setTimeout(() => {
+                const el = document.getElementById("cgpt-scroll");
+                if (el) el.scrollTop = el.scrollHeight;
+            }, 0);
+
+        } catch (err: any) {
+            // 분석 실패 시 에러 메시지를 채팅창에 추가
+            setMessages((prev) => [
+                ...prev,
+                { role: "assistant", text: `[${video.title}] 영상 분석 실패: ${err.message}` },
+            ]);
+        } finally {
+            setAnalyzingVideoId(null); // 분석 상태 해제
+        }
+    };
+
+
+    // 질문 상태
     const [asking, setAsking] = useState(false);
 
-// 채팅 전송 → 첨부파일 기반 질문
+    // 채팅 전송 → 첨부파일 기반 질문
     const sendChat = async () => {
         if (!id || !chatInput.trim() || asking) return;
         const q = chatInput.trim();
@@ -252,11 +323,14 @@ export default function NoteDetail() {
                         onChange={onPickFiles}
                     />
 
-                    {/* 영상 파트 */}
+                    {/* ▼ 수정: 영상 파트 */}
                     <div className="nd-side-section">
                         <VideoList
                             videos={videos}
-                            onClickAdd={onAddVideo}
+                            onClickAdd={handleRecommendVideos} // [기능 2] 핸들러 연결
+                            recommending={recommending}         // [기능 2] 로딩 상태 전달
+                            onAnalyze={handleAnalyzeVideo}      // [기능 3] 핸들러 연결
+                            analyzingVideoId={analyzingVideoId} // [기능 3] 로딩 상태 전달
                         />
                     </div>
 
@@ -302,11 +376,11 @@ export default function NoteDetail() {
                                 <div className="cgpt-row ai">
                                     <div className="cgpt-avatar">🤖</div>
                                     <div className="cgpt-bubble ai">
-            <span className="cgpt-typing">
-              <span className="dot" />
-              <span className="dot" />
-              <span className="dot" />
-            </span>
+                                        <span className="cgpt-typing">
+                                            <span className="dot" />
+                                            <span className="dot" />
+                                            <span className="dot" />
+                                        </span>
                                     </div>
                                 </div>
                             )}
