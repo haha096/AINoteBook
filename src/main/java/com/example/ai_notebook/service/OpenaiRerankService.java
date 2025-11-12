@@ -1,81 +1,67 @@
 package com.example.ai_notebook.service;
 
-
 import com.example.ai_notebook.dto.RecoItemDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
-import java.util.regex.Pattern; // ★★★ import 추가
-import java.util.stream.Collectors; // ★★★ import 추가
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class GeminiRerankService {
+public class OpenaiRerankService {
 
-    @Value("${gemini.apiKey}")   private String apiKey;
-    @Value("${gemini.model}")    private String model;
-    @Value("${gemini.endpoint}") private String endpoint;
+    @Value("${openai.apiKey}")   private String apiKey;
+    @Value("${openai.model}")    private String model;
+    @Value("${openai.baseUrl}") private String baseUrl;
 
     private final ObjectMapper om = new ObjectMapper();
 
-    // (1) ★★★ QueryUtil의 키워드 추출 로직을 여기로 가져옴 ★★★
-    private static final Pattern TOKENIZER = Pattern.compile("[^0-9A-Za-z가-힣]+");
-    private static final Set<String> STOP = Set.of(
-            "the","and","for","with","from","this","that","you","your",
-            "are","can","how","use","file","files","data","pdf","ppt",
-            "doc","docs","docx","pptx","내용","섹션","요약","분석","정리",
-            "자료","예제","수업","강의","과제","프로젝트","노트","소스",
-            // --- lec02.pdf 노이즈 총정리 ---
-            "e", "w1", "w2", "x1", "x2", "head", "model", "diff",
-            "large", "예측치", "정답", "를곱하여예측치를계산", "초기랜덤값",
-            "content", "test", "test1", "test2", "test3", "test4", "test5",
-            "forward", "가중치업데이트", "을활용하여", "데이터에가중치"
-    );
-
     /**
-     * (수정됨) 긴 본문 내용을 바탕으로 YouTube 검색 키워드 1~2개를 생성
-     * (Gemini 호출 X)
+     * 긴 본문 내용을 바탕으로 YouTube 검색 키워드 1~2개를 생성 (OpenAI 호출)
      */
     public String generateQuery(String noteBody) {
         if (noteBody == null || noteBody.isBlank()) return "IT 학습 튜토리얼";
 
-        // (1-1) ★★★ Gemini 호출 대신, QueryUtil의 "빈도수" 로직 실행 ★★★
-        Map<String, Integer> freq = new HashMap<>();
-        for (String raw : TOKENIZER.split(noteBody.toLowerCase())) { // body만 사용
-            if (raw.length() < 2) continue;
-            if (STOP.contains(raw)) continue; // 노이즈 제거
-            if (raw.chars().allMatch(Character::isDigit)) continue;
+        String prompt = """
+        [역할] 너는 IT 기술 노트를 분석하여 유튜브 검색 키워드를 생성하는 '키워드 추출 엔진'이다.
+        
+        [임무]
+        다음 [노트 내용]을 읽고, 이 노트의 가장 핵심적인 기술 용어 3~4개를 조합해서 검색어를 만들어라.
+        
+        [예시]
+        - "버퍼 오버플로 포맷 스트링 공격"
+        - "SQL 삽입 XSS 웹 보안"
+        
+        [규칙]
+        - 절대 설명하지 마라.
+        - 따옴표도 붙이지 마라.
+        - 키워드만 텍스트로 출력해라.
+        
+        [노트 내용]
+        %s
+        """.formatted(noteBody);
 
-            freq.merge(raw, 1, Integer::sum);
-        }
-
-        // (1-2) 빈도수+길이 순으로 상위 2개 키워드 추출
-        String query = freq.entrySet().stream()
-                .sorted((a,b)->{
-                    int f = Integer.compare(b.getValue(), a.getValue()); // 빈도수(Value) 내림차순
-                    if (f!=0) return f;
-                    return Integer.compare(b.getKey().length(), a.getKey().length()); // 길이(Key) 내림차순
-                })
-                .limit(2) // ★ 1~2개의 핵심 키워드만 사용
-                .map(Map.Entry::getKey)
-                .collect(Collectors.joining(" "));
+        String raw = callOpenai(prompt); // OpenAI 호출
+        String query = normalizeToQuery(raw); // 쿼리용 정규화
 
         if (query.isBlank()) {
             return "IT 학습 튜토리얼"; // 키워드 추출 실패 시 안전장치
         }
 
-        return query; // 예: "전이학습 propagation"
+        return query; // 예: "버퍼 오버플로 포맷 스트링"
     }
 
 
-    /** * 후보들을 Gemini로 재랭킹하고 상위 N개 반환
-     * (기존 코드 유지 - 404 에러가 나도 안전장치가 동작할 것임)
+    /**
+     * 후보들을 OpenAI로 재랭킹하고 상위 N개 반환
      */
     public List<RecoItemDTO> rerank(String noteContext, List<RecoItemDTO> candidates, int take) {
         if (candidates == null || candidates.isEmpty()) return List.of();
@@ -95,7 +81,7 @@ public class GeminiRerankService {
         try { compactJson = om.writeValueAsString(compact); }
         catch (Exception e) { compactJson = "[]"; }
 
-        // 2) 프롬프트
+        // 2) 프롬프트 (Gemini와 동일한 프롬프트 사용)
         String prompt = """
 [역할] 너는 학습용 큐레이션 엔진이다. 소스 내용와 '직결'되는 교육 영상을 골라라.
 
@@ -120,11 +106,11 @@ public class GeminiRerankService {
 ]
 """.formatted(noteContext, compactJson);
 
-        // 3) Gemini 호출 (404 에러가 나도 catch에서 처리됨)
-        String raw = callGemini(prompt);
+        // 3) OpenAI 호출
+        String raw = callOpenai(prompt);
         String normalized = normalizeToJson(raw);
 
-        // 4) 파싱 실패 시 안전 디폴트 (404 에러 시 여기가 동작함)
+        // 4) 파싱 실패 시 안전 디폴트
         List<Map<String, Object>> ranks;
         try {
             ranks = om.readValue(normalized, new TypeReference<>() {});
@@ -162,44 +148,44 @@ public class GeminiRerankService {
         catch (Exception e) { return 0.0; }
     }
 
-    /** * Gemini 호출 (v1beta generateContent)
-     * (기존 코드 유지 - rerank에서만 사용되며, 404 에러 시 안전장치가 처리함)
+    /**
+     * (공통) OpenAI 호출 (chat/completions)
      */
-    private String callGemini(String prompt) {
+    private String callOpenai(String prompt) {
         Map<String, Object> body = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
+                "model", model,
+                "messages", List.of(Map.of("role", "user", "content", prompt)),
+                "temperature", 0.1 // 일관된 답변을 위해 0.1로 설정
         );
         try {
             var resp = WebClient.builder()
-                    .baseUrl(endpoint)
+                    .baseUrl(baseUrl)
+                    .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                     .build()
                     .post()
-                    .uri("/models/" + model + ":generateContent?key=" + apiKey)
+                    .uri("/chat/completions")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Map.class)
                     .block();
 
-            if (resp == null) return "[]";
-            var cands = (List<Map<String, Object>>) resp.getOrDefault("candidates", List.of());
-            if (cands.isEmpty()) return "[]";
-            var content = (Map<String, Object>) cands.get(0).get("content");
-            var parts = (List<Map<String, Object>>) content.getOrDefault("parts", List.of());
-            if (parts.isEmpty()) return "[]";
-            return Objects.toString(parts.get(0).get("text"), "[]").trim();
+            if (resp == null) return "";
+            var choices = (List<Map<String, Object>>) resp.getOrDefault("choices", List.of());
+            if (choices.isEmpty()) return "";
+            var message = (Map<String, Object>) choices.get(0).get("message");
+            return Objects.toString(message.get("content"), "").trim();
         } catch (Exception ex) {
-            System.out.println("[Gemini] call failed: " + ex.getMessage());
-            return "[]";
+            System.out.println("[OpenAI] call failed: " + ex.getMessage());
+            return ""; // 실패 시 빈 문자열 반환
         }
     }
 
-    /** 코드블럭/잡텍스트가 섞인 응답을 JSON 배열만 남기도록 정규화 */
-    private String normalizeToJson(String text) {
-        if (text == null) return "[]";
+    /** (Query용) 코드블럭, 따옴표, 접두사 제거 */
+    private String normalizeToQuery(String text) {
+        if (text == null) return "";
         text = text.trim();
 
-        // ```json ... ``` 또는 ``` ... ``` 제거
         if (text.startsWith("```")) {
             int first = text.indexOf('\n');
             int last = text.lastIndexOf("```");
@@ -207,7 +193,28 @@ public class GeminiRerankService {
                 text = text.substring(first + 1, last).trim();
             }
         }
-        // 대괄호 블록만 추출
+        text = text.replace("\"", "").replace("'", "");
+        if (text.contains(":")) {
+            text = text.substring(text.indexOf(":") + 1).trim();
+        }
+        text = text.replace("\n", " ").trim();
+
+        if (text.isBlank()) return "";
+        return text;
+    }
+
+    /** (Rerank용) 코드블럭/잡텍스트가 섞인 응답을 JSON 배열만 남기도록 정규화 */
+    private String normalizeToJson(String text) {
+        if (text == null) return "[]";
+        text = text.trim();
+
+        if (text.startsWith("```")) {
+            int first = text.indexOf('\n');
+            int last = text.lastIndexOf("```");
+            if (first >= 0 && last > first) {
+                text = text.substring(first + 1, last).trim();
+            }
+        }
         int s = text.indexOf('[');
         int e = text.lastIndexOf(']');
         if (s >= 0 && e >= s) {

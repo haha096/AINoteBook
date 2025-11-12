@@ -6,6 +6,7 @@ import com.example.ai_notebook.util.QueryUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class YoutubeSearchService {
@@ -26,24 +28,24 @@ public class YoutubeSearchService {
 
     private final ObjectMapper om = new ObjectMapper();
 
-    public List<RecoItemDTO> searchTopSmart(String title, String filenamesCsv, String body, int max) {
-        String baseQ = QueryUtil.extractCompactQuery(title, filenamesCsv, body, 6);
-        if (baseQ.isBlank()) baseQ = title.isBlank() ? "학습 강의 튜토리얼" : title;
+    // ★★★ QueryUtil 대신 Gemini가 만든 smartQuery를 받도록 수정 ★★★
+    public List<RecoItemDTO> searchTopSmart(String smartQuery, int max) {
 
-        // 한국어 힌트 살짝 추가 (너무 길게 붙이면 검색 품질 저하)
-        String q = baseQ + " 한국어 강의";
+        String q = smartQuery;
+        log.info("[Debug] YouTube Search Query (from AI): [{}]", q);
+        log.info("[Debug] YouTube Search Query (from Gemini): [{}]", q);
 
         try {
-            // 1) search.list — Shorts 배제(중간 길이), 캡션 선호
+            // 1) search.list
             URI uri = UriComponentsBuilder.fromUriString("https://www.googleapis.com/youtube/v3/search")
                     .queryParam("key", apiKey)
                     .queryParam("part", "snippet")
                     .queryParam("type", "video")
                     .queryParam("order", "relevance")
                     .queryParam("regionCode", regionCode)
-                    .queryParam("relevanceLanguage", lang)   // ko
-                    .queryParam("videoDuration", "medium")   // 4~20분
-                    .queryParam("videoCaption", "closedCaption")
+                    .queryParam("relevanceLanguage", lang)
+                    .queryParam("videoDuration", "medium")
+                    //.queryParam("videoCaption", "closedCaption") // (주석 처리 유지)
                     .queryParam("maxResults", Math.min(max, 15))
                     .queryParam("q", q)
                     .build().toUri();
@@ -59,6 +61,9 @@ public class YoutubeSearchService {
                 String id = it.path("id").path("videoId").asText("");
                 if (!id.isBlank()) ids.add(id);
             }
+
+            log.info("[Debug] YouTube API Raw Result Count: {}", ids.size());
+
             if (ids.isEmpty()) return List.of();
 
             // 2) videos.list — 상세 조회
@@ -81,11 +86,11 @@ public class YoutubeSearchService {
                 JsonNode st = v.path("statistics");
 
                 int dur = isoDurationToSec(cd.path("duration").asText("PT0S"));
-                if (dur < 60 || dur > 7200) continue; // 1분 미만/2시간 초과 컷
+                if (dur < 60 || dur > 7200) continue;
 
                 String titleStr   = sn.path("title").asText("");
                 String channelStr = sn.path("channelTitle").asText("");
-                String audioLang  = sn.path("defaultAudioLanguage").asText(""); // 예: "ko", "en-US"
+                String audioLang  = sn.path("defaultAudioLanguage").asText("");
                 boolean looksKorean = isKorean(titleStr) || isKorean(channelStr) || audioLang.startsWith("ko");
 
                 all.add(RecoItemDTO.builder()
@@ -101,11 +106,13 @@ public class YoutubeSearchService {
                         .publishedAt(sn.path("publishedAt").asText(""))
                         .durationSec(dur)
                         .viewCount(st.has("viewCount") ? st.path("viewCount").asLong() : null)
-                        .score(looksKorean ? 0.1 : 0.0) // 한국어 감지 시 약간의 초기가점
+                        .score(looksKorean ? 0.1 : 0.0)
                         .build());
             }
 
-            // 3) 한국어 우선 필터 → 부족하면 폴백
+            log.info("[Debug] YouTube Filtered (by duration) Result Count: {}", all.size());
+
+            // 3) 한국어 우선 필터
             List<RecoItemDTO> krOnly = all.stream().filter(v ->
                     isKorean(v.getTitle()) || isKorean(v.getChannelTitle())
             ).toList();
@@ -119,7 +126,6 @@ public class YoutubeSearchService {
         }
     }
 
-    // 한글 포함 여부 간단 판별
     private static boolean isKorean(String s) {
         if (s == null) return false;
         for (int i=0;i<s.length();i++){
@@ -130,7 +136,6 @@ public class YoutubeSearchService {
     }
 
     private static Integer isoDurationToSec(String iso) {
-        // PT#H#M#S → 초
         int h=0,m=0,s=0; String num="";
         for (char c : iso.replace("PT","").toCharArray()){
             if (Character.isDigit(c)) num+=c;

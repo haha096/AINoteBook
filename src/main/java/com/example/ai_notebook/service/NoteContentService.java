@@ -69,25 +69,43 @@ public class NoteContentService {
                 .orElseThrow(() -> new IllegalArgumentException("note not found: "+noteId));
         String title = safe(note.getTitle());
 
+        // 1. 섹션 본문
         var sections = sectionRepo.findByNoteIdOrderByOrdIdxAsc(noteId);
-        String body = sections.stream()
+        String sectionBody = sections.stream()
                 .map(s -> safe(s.getBody()))
                 .map(this::stripHtml)
                 .collect(Collectors.joining("\n"));
-        if (body.length()>2000) body = body.substring(0,2000);
 
-        var srcs = sourceRepo.findByNoteIdOrderByIdDesc(noteId); // ← 앞서 추가했던 메서드
+        // 2. 소스 파일명 및 내용
+        var srcs = sourceRepo.findByNoteIdOrderByIdDesc(noteId);
         String filenames = srcs.stream()
                 .map(s -> safe(s.getName()))
                 .limit(10)
                 .collect(Collectors.joining(", "));
 
+// [★수정★] 소스의 '추출된 텍스트'를 가져옴
+        String sourceContent = srcs.stream()
+                .map(s -> safe(s.getProcessedTextContent())) // ← 여기를 수정!
+                .filter(s -> !s.isBlank())
+                .limit(3) // 최신 3개 소스의 내용만 반영
+                .collect(Collectors.joining("\n\n---\n\n")); // 소스 간 구분자
+
+        // 3. 본문 결합
+        String body = sectionBody;
+        if (!sourceContent.isBlank()) {
+            body += "\n\n[첨부 소스 내용]\n" + sourceContent; // 소스 내용 추가
+        }
+
+        // 길이 제한은 결합 후에 수행
+        if (body.length() > 2000) body = body.substring(0, 2000);
+
+        // 4. 최종 컨텍스트 생성
         String pretty = """
         [제목] %s
         [파일] %s
         [내용 일부]
         %s
-    """.formatted(title, filenames, body);
+        """.formatted(title, filenames, body);
 
         return new NoteContextPieces(title, filenames, body, pretty);
     }

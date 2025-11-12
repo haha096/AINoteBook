@@ -6,6 +6,7 @@ import com.example.ai_notebook.repository.NoteRepository;
 import com.example.ai_notebook.repository.NoteSectionRepository;
 import com.example.ai_notebook.repository.NoteSourceRepository;
 import com.example.ai_notebook.service.NoteService;
+import com.example.ai_notebook.service.SourceProcessingService; // ★ 수정됨: import
 import com.example.ai_notebook.service.SummarizeService;
 import com.example.ai_notebook.service.OpenAiService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "http://localhost:5174")
 public class NoteController {
 
     private final NoteRepository noteRepo;
@@ -32,8 +32,12 @@ public class NoteController {
     private final SummarizeService summarizeService;
     private final OpenAiService openAiService;
 
+    private final SourceProcessingService processingService; // ★ 수정됨: 주입
+
     @Value("${app.upload.base:${user.home}/ai-notebook/uploads}")
     private String uploadBase;
+
+    // --- 노트 기본 API (빠졌던 부분들) ---
 
     // 노트 기본 정보
     @GetMapping("/{id}")
@@ -42,71 +46,89 @@ public class NoteController {
         return Map.of("id", n.getId(), "title", n.getTitle(), "color", n.getColor());
     }
 
-    // 노트 생성/조회
+    // 노트 생성
     @PostMapping("/create")
-    public NoteEntity create(@RequestBody NoteDto dto){ return noteService.createNote(dto); }
-    @GetMapping("/user/{userId}")
-    public List<NoteEntity> listByUser(@PathVariable Long userId){ return noteService.getNotesByUser(userId); }
+    public NoteEntity create(@RequestBody NoteDto dto){
+        // NoteService의 createNote를 호출 (여기는 텍스트 추출 로직이 없음)
+        return noteService.createNote(dto);
+    }
 
-    // 소스 목록 (DB 기준)
+    // 노트 목록 조회 (404 에러났던 부분)
+    @GetMapping("/user/{userId}")
+    public List<NoteEntity> listByUser(@PathVariable Long userId){
+        return noteService.getNotesByUser(userId);
+    }
+
+    // --- 소스 API (수정된 부분들) ---
+
+    // 소스 목록 조회 (405 에러났던 부분)
     @GetMapping("/{id}/sources")
     public List<Map<String, String>> listSources(@PathVariable Long id) {
         return srcRepo.findByNoteId(id).stream()
                 .map(s -> Map.of(
                         "name", s.getName(),
-                        "path", s.getValue()   // web 경로(/uploads/..)
+                        "path", s.getValue()
                 ))
                 .toList();
     }
 
-    // URL/NOTION 소스 등록 (NOTION 당장은 안 쓰면 URL만 사용)
+    // URL/NOTION 소스 등록용 레코드 (빠졌던 부분)
     public record AddSourceReq(String type, String name, String value){}
+
+    // URL/NOTION 소스 등록
     @PostMapping("/{id}/sources")
     public NoteSourceEntity addSource(@PathVariable Long id, @RequestBody AddSourceReq req){
         var note = noteRepo.findById(id).orElseThrow();
         var src = new NoteSourceEntity();
         src.setNote(note);
-        src.setType(SourceType.valueOf(req.type())); // "URL" | "FILE" | "NOTION"
+        src.setType(SourceType.valueOf(req.type()));
         src.setName(req.name());
         src.setValue(req.value());
-        return srcRepo.save(src);
+
+        NoteSourceEntity savedSource = srcRepo.save(src);
+
+        // ★ 수정됨: 비동기 텍스트 추출 호출
+        processingService.processAndSaveContent(savedSource.getId());
+
+        return savedSource;
     }
 
-    // 파일 업로드 + OpenAI Files 업로드 + DB 저장
+    // 파일 업로드
     @PostMapping(value = "/{id}/sources/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public NoteSourceEntity upload(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
         var note = noteRepo.findById(id).orElseThrow();
 
         var dir = java.nio.file.Paths.get(uploadBase, String.valueOf(id));
         java.nio.file.Files.createDirectories(dir);
-
         var original = Objects.requireNonNullElse(file.getOriginalFilename(), "file");
-        //var safeName = java.util.UUID.randomUUID() + "_" + original;
         var safeName = original;
         java.nio.file.Path path = dir.resolve(safeName);
         java.nio.file.Files.copy(file.getInputStream(), path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-        // ★ OpenAI Files 업로드 → file-xxxx 받기
         String openAiFileId = null;
         try {
             openAiFileId = openAiService.uploadFile(path);
         } catch (Exception e) {
-            // 실패해도 로컬 경로는 남겨둠 (원하면 throw로 바꿔도 됨)
             openAiFileId = null;
         }
-
         var webPath = "/uploads/" + id + "/" + safeName;
 
         var src = new NoteSourceEntity();
         src.setNote(note);
         src.setType(SourceType.FILE);
         src.setName(original);
-        src.setValue(webPath);           // 프론트가 열 수 있는 경로
-        src.setOpenaiFileId(openAiFileId); // ★ 저장
+        src.setValue(webPath);
+        src.setOpenaiFileId(openAiFileId);
 
-        return srcRepo.save(src);
+        NoteSourceEntity savedSource = srcRepo.save(src);
+
+        // ★ 수정됨: 비동기 텍스트 추출 호출
+        processingService.processAndSaveContent(savedSource.getId());
+
+        return savedSource;
     }
 
+    // --- 기타 유틸 API (원본 유지) ---
 
     // 파일 기반 질문
     @PostMapping("/{id}/ask")
@@ -132,14 +154,14 @@ public class NoteController {
             }
         }
         if (ctx.length()==0) return Map.of("answer","첨부 파일을 읽을 수 없었습니다(형식 미지원/파일 미존재).");
-        var answer = openAiService.askWithContext(q, ctx.toString());   // ← 이거!!!
+        var answer = openAiService.askWithContext(q, ctx.toString());
         return Map.of("answer", answer, "fileCount", sources.size());
     }
 
     @PostMapping("/{id}/sources/link-existing")
     public NoteSourceEntity linkExisting(
             @PathVariable Long id,
-            @RequestParam("safeName") String safeName // 예: f3fbc910-..._lec02.pdf
+            @RequestParam("safeName") String safeName
     ) {
         var note = noteRepo.findById(id).orElseThrow();
         var local = java.nio.file.Paths.get(uploadBase, String.valueOf(id), safeName);
@@ -148,7 +170,6 @@ public class NoteController {
         }
         var webPath = "/uploads/" + id + "/" + safeName;
 
-        // 이미 같은 경로가 있으면 재사용
         var existing = srcRepo.findByNoteId(id).stream()
                 .filter(s -> webPath.equals(s.getValue()))
                 .findFirst();
@@ -157,13 +178,13 @@ public class NoteController {
         var src = new NoteSourceEntity();
         src.setNote(note);
         src.setType(SourceType.FILE);
-        src.setName(safeName.substring(safeName.indexOf('_')+1)); // 원본명 추출
+        src.setName(safeName.substring(safeName.indexOf('_')+1));
         src.setValue(webPath);
-        src.setOpenaiFileId(null); // B안은 필요 없음
+        src.setOpenaiFileId(null);
         return srcRepo.save(src);
     }
 
-    // 요약(파일명/URL을 합쳐 간단 요약 → 나중에 파일 파서로 교체)
+    // 요약
     @PostMapping("/{id}/summarize")
     public Map<String,Object> summarize(@PathVariable Long id){
         var note = noteRepo.findById(id).orElseThrow();

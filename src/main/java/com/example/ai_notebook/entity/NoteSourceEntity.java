@@ -21,6 +21,10 @@ public class NoteSourceEntity {
     private String name;   // 표시용 이름
     private String value;  // 파일경로 / URL / Notion pageId
 
+    @Lob // 대용량 텍스트(CLOB) 지정을 위해
+    @Column(name = "processed_text_content", columnDefinition = "LONGTEXT")
+    private String processedTextContent;
+
     @Column(name = "openai_file_id", length = 120)
     private String openaiFileId;
 
