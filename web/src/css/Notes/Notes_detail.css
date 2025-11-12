@@ -354,3 +354,135 @@ html, body, #root {
     0%, 80%, 100% { transform: scale(0.6); opacity: .6; }
     40%          { transform: scale(1.0); opacity: 1; }
 }
+
+/* ======================================= */
+/* ▼ [개선] SourceList 상태 배지 스타일 ▼ */
+/* ======================================= */
+
+/* nd-list-item을 flex로 변경 (텍스트 + 배지 정렬) */
+.nd-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+}
+
+/* 아이콘은 크기 고정 */
+.nd-list-icon {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+}
+
+/* 텍스트는 늘어나고, 넘치면 ... 처리 */
+.nd-list-text {
+    line-height: 24px;
+    flex: 1; /* 남은 공간 차지 */
+    min-width: 0; /* flex 컨테이너 내에서 ellipsis가 동작하도록 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 상태 배지 기본 */
+.nd-status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    flex-shrink: 0; /* 크기 고정 */
+}
+/* 준비됨 (초록색) */
+.nd-status-badge.ready {
+    background: #def7ec;
+    color: #065f46;
+}
+/* 처리중 (노란색) */
+.nd-status-badge.processing {
+    background: #fefce8;
+    color: #854d0e;
+}
+
+/* ======================================= */
+/* ▼ [개선] VideoList 추천 사유/배지 스타일 ▼ */
+/* ======================================= */
+
+/* 비디오 리스트 아이템 내부 레이아웃 */
+.nd-list-item.video {
+    align-items: flex-start; /* 상단 정렬 */
+    gap: 10px;
+    padding: 10px 4px;
+}
+
+/* 텍스트 영역 (제목 + 사유) */
+.nd-list-main {
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px; /* 아이콘과 미세 정렬 */
+}
+.nd-list-item.video .nd-list-text {
+    display: block; /* 2줄 이상일 수 있으므로 */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    cursor: pointer;
+    line-height: 1.4;
+}
+.nd-list-item.video .nd-list-text:hover {
+    color: #2563eb;
+}
+
+/* 추천 사유 */
+.nd-video-reason {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    /* 한 줄로 ... 처리 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 난이도 배지 */
+.nd-video-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #e0e7ff;
+    color: #3730a3;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* 분석 버튼 */
+.nd-analyze-btn {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.nd-analyze-btn:hover:not(:disabled) {
+    background: #e5e7eb;
+}
+.nd-analyze-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 추천 버튼 (nd-add-btn 공용 스타일 사용) */
+.nd-add-btn.recommend {
+    font-size: 14px;
+    font-weight: 600;
+    width: auto;
+    padding: 0 10px;
+}
