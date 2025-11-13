@@ -3,7 +3,7 @@
     --hdr-h: 64px;       /* 헤더 높이 */
     --gap: 24px;
     --side-w: 260px;     /* 좌측 소스 폭 */
-    --chat-w: 380px;     /* 우측 챗 폭 */
+    --chat-w: 380px;     /* 우측 챗 폭 (참고용) */
     --card-bg: #fff;
     --page-bg: #f5f6f8;
     --border: #e6e7ea;
@@ -38,7 +38,7 @@ html, body, #root {
 .nd-grid{
     height: calc(100vh - var(--hdr-h));
     display: grid;
-    grid-template-columns: var(--side-w) 1fr var(--chat-w);
+    grid-template-columns: var(--side-w) 1fr 1.2fr;
     gap: var(--gap);
     padding: var(--gap);
     box-sizing: border-box;
@@ -46,16 +46,14 @@ html, body, #root {
 
 /* ===== 각 칼럼 공통: 카드, 독립 스크롤 ===== */
 .nd-side, .nd-main, .nd-chat{
-    min-height: 0;          /* 그리드에서 overflow:auto가 먹도록 */
+    min-height: 0;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 1px 2px rgba(0,0,0,.04);
-    overflow: hidden;    /* ← 칼럼 자체는 숨기고… */
+    overflow: hidden;
     overscroll-behavior: contain;
 }
-
-
 
 /* ===== 좌측 소스 패널 ===== */
 .nd-panel{ padding: 16px; }
@@ -79,7 +77,6 @@ html, body, #root {
     justify-content: center;
     transition: all 0.15s ease-in-out;
 }
-
 .nd-add-btn:hover {
     background: #e9ecf1;
     border-color: #ccd0d5;
@@ -91,37 +88,29 @@ html, body, #root {
     padding: 20px 24px 40px;
     display:flex; flex-direction: column; gap: 14px;
 }
-
 .nd-title-input-h1{
     font-size: 28px; font-weight: 800;
     border:none; outline:none; background:transparent;
     padding: 6px 2px;
 }
-
-/* TipTap 에디터 래퍼가 충분한 높이를 가지도록 */
 .nd-section{
     flex: 1 1 auto;
     min-height: 0;
     display: flex; flex-direction: column;
 }
-
 .nd-editor{
     flex: 1 1 auto; min-height: 0;
     display:flex; flex-direction: column;
 }
-
 .nd-toolbar{
     position: sticky; top: 0; z-index: 1;
     background: #fff; border-bottom:1px solid var(--border);
     padding: 8px; gap:6px; display:flex; flex-wrap:wrap;
 }
-
 .nd-editor-surface{
     flex: 1 1 auto; min-height: 0;
     padding: 12px 8px 24px;
 }
-
-/* TipTap 본문이 칼럼 높이에 맞춰 스크롤되게 */
 .nd-editor .ProseMirror{
     min-height: 100%;
     outline: none;
@@ -132,24 +121,10 @@ html, body, #root {
     height: 100%;
     display:flex; flex-direction: column;
 }
-
 .nd-chat-scroll{
     flex:1 1 auto; min-height:0;
     padding: 16px;
     overflow:auto;
-}
-
-.nd-chat-input{
-    border-top:1px solid var(--border);
-    padding: 12px; display:flex; gap:8px;
-    background:#fff; position: sticky; bottom:0;
-}
-.nd-chat-input input{
-    flex:1 1 auto; border:1px solid var(--border);
-    border-radius:10px; padding:10px 12px;
-}
-.nd-chat-input button{
-    border-radius:10px; padding:10px 14px; border:1px solid var(--border);
 }
 
 /* ===== 반응형(좁을 때 2열/1열로 전환) ===== */
@@ -163,22 +138,18 @@ html, body, #root {
     .nd-main{ order:2; }
 }
 
+/* --- 좌측 패널 (소스/비디오) --- */
 .nd-side-split {
     display: flex;
     flex-direction: column;
     gap: 12px;
     height: 100%;
 }
-
-/* 소스, 비디오 각각 독립 스크롤 박스 */
 .nd-side-section{
     flex: 1;
     min-height: 0;
-    /* 기존 overflow-y: auto; 를 없애고 */
-    overflow: hidden;      /* ← 패널 내부가 스크롤 */
+    overflow: hidden;
 }
-
-/* 패널 레이아웃: 제목(고정) + 본문(스크롤) */
 .nd-panel{
     display: flex;
     flex-direction: column;
@@ -187,8 +158,6 @@ html, body, #root {
     border-radius: 12px;
     background: #fff;
 }
-
-/* 제목줄은 고정 */
 .nd-panel-title{
     flex: 0 0 auto;
     display: flex;
@@ -198,16 +167,12 @@ html, body, #root {
     border-bottom: 1px solid var(--border);
     font-weight: 600;
 }
-
-/* 목록이 들어가는 영역만 스크롤 */
 .nd-panel-body{
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;          /* ← 여기만 스크롤 */
+    overflow: auto;
     padding: 8px 12px 12px;
 }
-
-/* 보기 좋게 약간의 간격/정렬 */
 .nd-list{ list-style: none; margin: 0; padding: 0; }
 .nd-list-item{
     display: flex; align-items: center; gap: 12px;
@@ -215,7 +180,6 @@ html, body, #root {
 }
 .nd-list-icon{ width: 24px; height: 24px; flex: 0 0 24px; }
 .nd-list-text{ line-height: 24px; }
-
 #nd-side_nd-side-split{
     background: #f5f6f8;
 }
@@ -225,25 +189,20 @@ html, body, #root {
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
     background: #fff;
 }
-
 .cgpt-header {
     padding: 12px 16px;
     border-bottom: 1px solid #f0f0f0;
 }
 .cgpt-title { font-weight: 700; }
 .cgpt-sub { font-size: 12px; color: #6b7280; }
-
 .cgpt-scroll {
     flex: 1;
     overflow: auto;
     padding: 16px;
     background: #fafafa;
 }
-
 .cgpt-empty {
     color: #6b7280;
     font-size: 14px;
@@ -251,18 +210,15 @@ html, body, #root {
     margin-top: 24px;
 }
 .cgpt-hint { margin-top: 6px; font-size: 12px; color: #9ca3af; }
-
 .cgpt-row {
     display: flex;
     align-items: flex-start;
     gap: 8px;
     margin-bottom: 12px;
 }
-
 .cgpt-row.user { justify-content: flex-end; }
 .cgpt-row.user .cgpt-avatar { order: 2; }
 .cgpt-row.user .cgpt-bubble { order: 1; }
-
 .cgpt-avatar {
     width: 28px;
     height: 28px;
@@ -273,11 +229,10 @@ html, body, #root {
     background: #eef2ff;
     font-size: 16px;
 }
-
 .cgpt-bubble {
     position: relative;
     max-width: 75%;
-    padding: 10px 12px 28px; /* 아래 여백: copy 버튼 자리 */
+    padding: 10px 12px 28px;
     border-radius: 12px;
     font-size: 14px;
     line-height: 1.55;
@@ -285,7 +240,6 @@ html, body, #root {
     word-break: break-word;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
-
 .cgpt-bubble.user {
     background: #2563eb;
     color: #fff;
@@ -298,7 +252,6 @@ html, body, #root {
     border: 1px solid #e5e7eb;
     border-top-left-radius: 4px;
 }
-
 .cgpt-copy {
     position: absolute;
     right: 8px;
@@ -312,12 +265,43 @@ html, body, #root {
 }
 .cgpt-copy:hover { background: #f3f4f6; }
 
+
+/* ======================================= */
+/* ▼ [수정됨] AI 채팅 입력창 (프로 모드) ▼ */
+/* ======================================= */
+
 .cgpt-inputbar {
-    display: flex;
-    gap: 8px;
-    padding: 10px;
     border-top: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    padding: 10px;
     background: #fff;
+    gap: 8px;
+    align-items: center;
+}
+.cgpt-inputbar.pro {
+    flex-direction: column;
+    align-items: stretch;
+}
+.cgpt-pro-inputs {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+.cgpt-pro-input {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: #fff;
+    outline: none;
+    height: 38px;
+    box-sizing: border-box;
+}
+.cgpt-pro-input:focus {
+    border-color: #a0a0a0;
 }
 .cgpt-input {
     flex: 1;
@@ -326,9 +310,45 @@ html, body, #root {
     border: 1px solid #e5e7eb;
     padding: 0 12px;
     outline: none;
+    font-size: 15px;
+    min-width: 100px;
+    box-sizing: border-box;
 }
-.cgpt-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-
+.cgpt-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.cgpt-inputbar.pro .cgpt-input {
+    font-size: 14px;
+    padding: 12px;
+    height: auto;
+    min-height: 38px;
+}
+.cgpt-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+.cgpt-inputbar.pro .cgpt-buttons {
+    width: 100%;
+}
+.cgpt-pro-toggle {
+    border: 1px solid #ccc;
+    background: #f0f0f0;
+    padding: 0 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    height: 38px;
+    flex-shrink: 0;
+}
+.cgpt-pro-toggle:hover {
+    background: #e0e0e0;
+}
+.cgpt-inputbar.pro .cgpt-pro-toggle {
+    flex: 1;
+}
 .cgpt-send {
     height: 38px;
     min-width: 84px;
@@ -336,10 +356,20 @@ html, body, #root {
     background: #111827;
     color: #fff;
     border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
-.cgpt-send:disabled { opacity: .6; }
+.cgpt-inputbar.pro .cgpt-send {
+    flex: 4;
+}
+.cgpt-send:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
 
-/* typing dots */
+/* typing dots (기존과 동일) */
 .cgpt-typing .dot {
     display: inline-block;
     width: 6px; height: 6px;
@@ -358,46 +388,36 @@ html, body, #root {
 /* ======================================= */
 /* ▼ [개선] SourceList 상태 배지 스타일 ▼ */
 /* ======================================= */
-
-/* nd-list-item을 flex로 변경 (텍스트 + 배지 정렬) */
 .nd-list-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 8px 4px;
 }
-
-/* 아이콘은 크기 고정 */
 .nd-list-icon {
     width: 24px;
     height: 24px;
     flex: 0 0 24px;
 }
-
-/* 텍스트는 늘어나고, 넘치면 ... 처리 */
 .nd-list-text {
     line-height: 24px;
-    flex: 1; /* 남은 공간 차지 */
-    min-width: 0; /* flex 컨테이너 내에서 ellipsis가 동작하도록 */
+    flex: 1;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* 상태 배지 기본 */
 .nd-status-badge {
     font-size: 11px;
     font-weight: 600;
     padding: 3px 8px;
     border-radius: 12px;
-    flex-shrink: 0; /* 크기 고정 */
+    flex-shrink: 0;
 }
-/* 준비됨 (초록색) */
 .nd-status-badge.ready {
     background: #def7ec;
     color: #065f46;
 }
-/* 처리중 (노란색) */
 .nd-status-badge.processing {
     background: #fefce8;
     color: #854d0e;
@@ -406,22 +426,18 @@ html, body, #root {
 /* ======================================= */
 /* ▼ [개선] VideoList 추천 사유/배지 스타일 ▼ */
 /* ======================================= */
-
-/* 비디오 리스트 아이템 내부 레이아웃 */
 .nd-list-item.video {
-    align-items: flex-start; /* 상단 정렬 */
+    align-items: flex-start;
     gap: 10px;
     padding: 10px 4px;
 }
-
-/* 텍스트 영역 (제목 + 사유) */
 .nd-list-main {
     flex: 1;
     min-width: 0;
-    padding-top: 2px; /* 아이콘과 미세 정렬 */
+    padding-top: 2px;
 }
 .nd-list-item.video .nd-list-text {
-    display: block; /* 2줄 이상일 수 있으므로 */
+    display: block;
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
@@ -431,8 +447,6 @@ html, body, #root {
 .nd-list-item.video .nd-list-text:hover {
     color: #2563eb;
 }
-
-/* 추천 사유 */
 .nd-video-reason {
     font-size: 12px;
     color: #6b7280;
@@ -440,14 +454,10 @@ html, body, #root {
     display: flex;
     align-items: center;
     gap: 6px;
-
-    /* 한 줄로 ... 처리 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* 난이도 배지 */
 .nd-video-badge {
     font-size: 10px;
     font-weight: 700;
@@ -458,8 +468,6 @@ html, body, #root {
     text-transform: uppercase;
     flex-shrink: 0;
 }
-
-/* 분석 버튼 */
 .nd-analyze-btn {
     font-size: 12px;
     padding: 4px 10px;
@@ -478,11 +486,81 @@ html, body, #root {
     opacity: 0.7;
     cursor: not-allowed;
 }
-
-/* 추천 버튼 (nd-add-btn 공용 스타일 사용) */
 .nd-add-btn.recommend {
     font-size: 14px;
     font-weight: 600;
     width: auto;
     padding: 0 10px;
+}
+
+/* ======================================= */
+/* ▼ [추가됨] 마크다운 렌더링 스타일 ▼ */
+/* ======================================= */
+
+.markdown-content {
+    line-height: 1.6;
+}
+
+/* ▼▼▼ [수정] p 태그의 기본 위/아래 마진을 0으로 제거합니다. ▼▼▼ */
+.markdown-content p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+/* ▲▲▲ [수정] ▲▲▲ */
+
+/* p 태그가 연속으로 올 때만 마진을 줍니다 */
+.markdown-content p + p {
+    margin-top: 10px;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+}
+
+.markdown-content h1 { font-size: 1.5em; }
+.markdown-content h2 { font-size: 1.3em; }
+.markdown-content h3 { font-size: 1.15em; }
+.markdown-content h4 { font-size: 1.1em; }
+
+.markdown-content strong {
+    font-weight: 700;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 24px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.markdown-content li {
+    margin-bottom: 4px;
+}
+
+.markdown-content code {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    padding: 2px 5px;
+    border-radius: 6px;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.markdown-content pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.markdown-content pre code {
+    background: none;
+    border: none;
+    padding: 0;
 }

@@ -13,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import com.example.ai_notebook.service.OpenAiService;
 
 @Slf4j
 @Service
@@ -21,6 +24,9 @@ import java.nio.file.Paths;
 public class SourceProcessingService {
 
     private final NoteSourceRepository sourceRepo;
+
+    // ▼▼▼ 2. OpenAiService 주입 ▼▼▼
+    private final OpenAiService openAiService;
 
     @Value("${app.upload.base:${user.home}/ai-notebook/uploads}")
     private String uploadBase;
@@ -41,7 +47,6 @@ public class SourceProcessingService {
             if (source.getType() == SourceType.URL) {
                 // TODO: Jsoup 등으로 URL 본문 스크래핑
                 textContent = "[임시] Jsoup으로 파싱한 URL 텍스트: " + source.getValue();
-                // (1) ★★★ URL 스크래핑 후에도 청소 로직 호출 ★★★
                 textContent = cleanExtractedText(textContent);
 
             } else if (source.getType() == SourceType.FILE) {
@@ -49,9 +54,10 @@ public class SourceProcessingService {
                 String noteIdStr = source.getNote().getId().toString();
                 String fileName = Paths.get(webPath).getFileName().toString();
 
-                var localPath = Paths.get(uploadBase, noteIdStr, fileName);
+                Path localPath = Paths.get(uploadBase, noteIdStr, fileName); // (수정) Path 타입으로 받기
 
                 if (Files.exists(localPath)) {
+                    // --- 1. 텍스트 추출 (기존 로직) ---
                     if (fileName.toLowerCase().endsWith(".pdf")) {
                         try (var doc = PDDocument.load(localPath.toFile())) {
                             var stripper = new PDFTextStripper();
@@ -60,9 +66,19 @@ public class SourceProcessingService {
                     } else {
                         textContent = Files.readString(localPath);
                     }
-
-                    // (2) ★★★ 추출된 텍스트 청소 (정확한 위치) ★★★
                     textContent = cleanExtractedText(textContent);
+
+                    // --- ▼▼▼ 3. OpenAI 파일 업로드 (추가된 로직) ▼▼▼ ---
+                    try {
+                        String fileId = openAiService.uploadFile(localPath);
+                        source.setOpenaiFileId(fileId);
+                        log.info("[SourceProcessing] Uploaded to OpenAI, fileId: {} for source: {}", fileId, sourceId);
+                    } catch (Exception e) {
+                        log.warn("[SourceProcessing] OpenAI file upload failed for source: {}. Error: {}", sourceId, e.getMessage());
+                        // (참고) 업로드에 실패해도 텍스트 추출은 성공했으므로,
+                        // 트랜잭션을 롤백하지 않고 계속 진행합니다.
+                    }
+                    // --- ▲▲▲ (추가된 로직) ▲▲▲ ---
 
                 } else {
                     textContent = "[파일을 찾을 수 없음: " + localPath + "]";
@@ -70,29 +86,24 @@ public class SourceProcessingService {
                 }
             }
 
-            if (textContent.length() > 5000) { // <-- 청소 후에 길이 제한
+            if (textContent.length() > 5000) {
                 textContent = textContent.substring(0, 5000);
             }
 
             source.setProcessedTextContent(textContent);
-            log.info("[SourceProcessing] Successfully processed source: {}", sourceId);
+            log.info("[SourceProcessing] Successfully processed text for source: {}", sourceId);
 
         } catch (Exception e) {
             log.error("[SourceProcessing] Failed to process source: " + sourceId, e);
             source.setProcessedTextContent("[텍스트 추출 실패: " + e.getMessage() + "]");
         }
+        // @Transactional이 종료되면서 source 객체가 DB에 자동 저장 (save 호출 불필요)
     }
 
-    // (3) ★★★ 텍스트 청소 헬퍼 메서드 (정확한 위치) ★★★
     private String cleanExtractedText(String text) {
         if (text == null) return "";
-
-        // 1. 의미 없는 특수 문자, 기호 제거 (알파벳, 숫자, 한글, 공백만 남김)
         String cleaned = text.replaceAll("[^a-zA-Z0-9가-힣\\s]", " ");
-
-        // 2. 여러 개의 공백을 하나로 축소
         cleaned = cleaned.replaceAll("\\s+", " ").trim();
-
         return cleaned;
     }
 }

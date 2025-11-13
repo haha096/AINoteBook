@@ -65,3 +65,65 @@
     color: #6b7280;
     border-color: #e5e7eb;
 }
+
+/* --- ▼▼▼ [신규] 핵심단어 검색 UI 스타일 ▼▼▼ --- */
+
+/* 1. 패널 타이틀 레이아웃을 flex로 재정비 (중요) */
+.nd-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 자식 요소들(타이틀, 키워드검색, 추천버튼) 사이 간격 */
+    flex-wrap: wrap; /* (혹시 모르니) 화면 좁아지면 줄바꿈 */
+}
+
+/* 2. '영상' 타이틀이 남는 공간을 모두 차지 (왼쪽 정렬 효과) */
+.nd-panel-title > span {
+    flex-grow: 1;
+    font-size: 16px; /* (기존과 동일하게) */
+    font-weight: 600;
+}
+
+/* 3. '핵심단어 입력창 + 검색 버튼' 래퍼 */
+.nd-keyword-search {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* 입력창과 검색 버튼 사이 간격 */
+}
+
+/* 4. '핵심단어 입력창' 스타일 */
+.nd-keyword-search input {
+    font-size: 13px;
+    border: 1px solid #d1d5db; /* gray-300 */
+    border-radius: 6px;
+    padding: 4px 8px;
+    width: 150px; /* 입력창 너비 (조절 가능) */
+    line-height: 1.5;
+}
+
+/* 5. '검색' 버튼 스타일 (기존 .recommend와 유사하게) */
+.nd-panel-title .nd-add-btn.keyword {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 500;
+
+    /* (스타일 통일을 위해 .recommend와 유사하게 맞춤) */
+    color: #374151; /* gray-700 */
+    background-color: #f3f4f6; /* gray-100 */
+    border: 1px solid #d1d5db; /* gray-300 */
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* 6. '검색' 버튼 비활성화/호버 (기존 버튼들과 통일) */
+.nd-panel-title .nd-add-btn.keyword:hover {
+    background-color: #e5e7eb; /* gray-200 */
+}
+
+.nd-panel-title .nd-add-btn.keyword:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    background-color: #f3f4f6;
+}
+
+/* --- ▲▲▲ [신규] 핵심단어 검색 UI 스타일 ▲▲▲ --- */
