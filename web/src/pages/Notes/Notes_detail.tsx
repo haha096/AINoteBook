@@ -12,6 +12,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 
+//AI의 프롬포트기능, 영상추천기능을 고도화
+//11월13일 이 작업을 끝냄
+
 const API_BASE = "http://localhost:8080";
 
 export default function NoteDetail() {
