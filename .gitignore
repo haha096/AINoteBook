@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+# Python (Whisper) 프로젝트 무시
+youtube-stt/.venv/
+youtube-stt/downloads/
+__pycache__/
