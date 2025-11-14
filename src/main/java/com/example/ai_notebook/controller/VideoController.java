@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+//주석처리 잘 되는 지 확인
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/videos")
