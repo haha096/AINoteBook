@@ -9,6 +9,9 @@ import whisper
 
 # --- 1. Whisper 모델을 전역 변수로 딱 한 번만 로드합니다. ---
 # 이게 핵심입니다! 서버가 켜질 때 딱 한 번만 실행됩니다.
+
+#.\.venv\Scripts\activate
+
 print("[INFO] Whisper 모델을 로드합니다... (small)")
 WHISPER_MODEL = whisper.load_model("small")
 print("[INFO] Whisper 모델 로드 완료.")
