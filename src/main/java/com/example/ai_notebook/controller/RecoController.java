@@ -3,6 +3,7 @@ package com.example.ai_notebook.controller;
 import com.example.ai_notebook.dto.RecoItemDTO;
 import com.example.ai_notebook.service.NoteContentService;
 import com.example.ai_notebook.service.OpenaiRerankService;
+import com.example.ai_notebook.service.GeminiRerankService;
 import com.example.ai_notebook.service.YoutubeSearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,9 @@ public class RecoController {
     private final NoteContentService noteContentService;
     private final YoutubeSearchService youtubeSearchService;
     private final OpenaiRerankService openaiRerankService;
+
+    //Gemini로 영상추천 테스트
+    private final GeminiRerankService geminiRerankService;
 
     /**
      * [기존] 노트 ID 기반 영상 추천 (문서 추천)
@@ -67,6 +71,52 @@ public class RecoController {
         // (참고) 컨텍스트로 '키워드' 자체를 사용합니다.
         var result = openaiRerankService.rerank(keyword, candidates, 4);
         log.info("[Debug] Keyword Search [{}]: OpenAI Reranked Result Count: {}", keyword, result.size());
+
+        return result;
+    }
+
+    // --- (B) 신규 Gemini 기반 비교 테스트 ---
+
+    /**
+     * [신규-테스트용] 노트 ID 기반 영상 추천 (Gemini Rerank)
+     * (비교를 위해 /videos-gemini/... 로 경로 설정)
+     */
+    @GetMapping("/videos-gemini/{noteId}")
+    public List<RecoItemDTO> recommendVideosGemini(@PathVariable Long noteId) {
+        // 1. 컨텍스트 생성 (재사용)
+        var pieces = noteContentService.buildPieces(noteId);
+        log.info("[Gemini] Note ID [{}]: Context Generated", noteId);
+
+        // 2. Gemini(로컬) 검색어 생성 (Gemini 서비스의 로직 사용)
+        String smartQuery = geminiRerankService.generateQuery(pieces.body());
+        log.info("[Gemini] Note ID [{}]: Generated Query: [{}]", noteId, smartQuery);
+
+        // 3. 유튜브 검색 (재사용)
+        var candidates = youtubeSearchService.searchTopSmart(smartQuery, 12);
+        log.info("[Gemini] Note ID [{}]: YouTube Candidates Count: {}", noteId, candidates.size());
+
+        // 4. Gemini 재랭킹 (Gemini 서비스 호출)
+        var result = geminiRerankService.rerank(pieces.prettyContext(), candidates, 4);
+        log.info("[Gemini] Note ID [{}]: Reranked Result Count: {}", noteId, result.size());
+
+        return result;
+    }
+
+    /**
+     * [신규-테스트용] 키워드 기반 영상 추천 (Gemini Rerank)
+     * (비교를 위해 /videos-gemini/keyword 로 경로 설정)
+     */
+    @GetMapping("/videos-gemini/keyword")
+    public List<RecoItemDTO> recommendVideosByKeywordGemini(@RequestParam("q") String keyword) {
+        log.info("[Gemini] Keyword Search: Starting for keyword [{}]", keyword);
+
+        // 1. 유튜브 검색 (재사용)
+        var candidates = youtubeSearchService.searchTopSmart(keyword, 12);
+        log.info("[Gemini] Keyword Search [{}]: YouTube Candidates Count: {}", keyword, candidates.size());
+
+        // 2. Gemini 재랭킹 (Gemini 서비스 호출)
+        var result = geminiRerankService.rerank(keyword, candidates, 4);
+        log.info("[Gemini] Keyword Search [{}]: Reranked Result Count: {}", keyword, result.size());
 
         return result;
     }

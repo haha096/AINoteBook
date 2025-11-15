@@ -99,10 +99,21 @@ export default function NoteDetail() {
 
     // ▼ [기능 2] Gemini/OpenAI 영상 추천 API
     async function fetchRecommendedVideos(noteId: string): Promise<VideoItem[]> {
-        const r = await fetch(`${API_BASE}/api/reco/videos/${noteId}`, {
+        //GPT 영상추천
+        // const r = await fetch(`${API_BASE}/api/reco/videos/${noteId}`, {
+        //     method: "GET",
+        //     credentials: "include",
+        // });
+        // if (!r.ok) throw new Error(`영상 추천 실패: ${r.status}`);
+        // return r.json();
+
+        //Gemini 영상추천
+        const r = await fetch(`${API_BASE}/api/reco/videos-gemini/${noteId}`, {
             method: "GET",
             credentials: "include",
         });
+        // ▲▲▲
+
         if (!r.ok) throw new Error(`영상 추천 실패: ${r.status}`);
         return r.json();
     }

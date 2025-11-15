@@ -11,6 +11,7 @@ import whisper
 # 이게 핵심입니다! 서버가 켜질 때 딱 한 번만 실행됩니다.
 
 #.\.venv\Scripts\activate
+#deactivate
 
 print("[INFO] Whisper 모델을 로드합니다... (small)")
 WHISPER_MODEL = whisper.load_model("small")
