@@ -1,9 +1,8 @@
-// VideoList.tsx (전체 코드)
-
-// ▼▼▼ [추가됨] useState 임포트 ▼▼▼
 import { useState } from "react";
 import youtubeIcon from "../../../assets/icons/youtube.png";
 import "../../../css/Notes/components/VideoList.css";
+// ▼▼▼ [수정 1] 검색 아이콘 임포트 ▼▼▼
+import searchIcon from "../../../assets/icons/검색.png";
 
 export type VideoItem = {
     id: string;
@@ -55,6 +54,18 @@ export default function VideoList({
         <div className="nd-panel">
             <div className="nd-panel-title">
                 <span>영상</span>
+                {/* (기존) 소스 기반 추천 버튼 */}
+                {onClickAdd && (
+                    <button
+                        className="nd-add-btn recommend"
+                        onClick={onClickAdd}
+                        title="소스 기반 영상 추천"
+                        disabled={recommending || recommendingKeyword} // ★ 키워드 검색 중에도 비활성화
+                    >
+                        {recommending ? "..." : "추천"}
+                    </button>
+                )}
+
 
                 {/* ▼▼▼ [수정됨] 핵심단어 검색 UI 추가 ▼▼▼ */}
                 <div className="nd-keyword-search">
@@ -68,26 +79,19 @@ export default function VideoList({
                     />
                     <button
                         className="nd-add-btn keyword" // 새 클래스
+                        id="nd-add-btn-keyword"
                         onClick={handleKeywordAdd}
-                        title="핵심단어로 영상 추천"
+                        title="핵심단어 영상 추천"
                         disabled={recommendingKeyword || !keywordInput.trim()}
                     >
-                        {recommendingKeyword ? "..." : "검색"}
+                        {/* ▼▼▼ [수정 2] 텍스트 대신 <img> 태그 사용 ▼▼▼ */}
+                        {recommendingKeyword ? "..." : <img src={searchIcon} alt="검색" />}
+                        {/* ▲▲▲ [수정 2] ▲▲▲ */}
                     </button>
                 </div>
                 {/* ▲▲▲ [수정됨] ▲▲▲ */}
 
-                {/* (기존) 소스 기반 추천 버튼 */}
-                {onClickAdd && (
-                    <button
-                        className="nd-add-btn recommend"
-                        onClick={onClickAdd}
-                        title="소스 기반 영상 추천받기"
-                        disabled={recommending || recommendingKeyword} // ★ 키워드 검색 중에도 비활성화
-                    >
-                        {recommending ? "..." : "추천"}
-                    </button>
-                )}
+
             </div>
 
             <div className="nd-panel-body">

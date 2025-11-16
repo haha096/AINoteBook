@@ -1,12 +1,13 @@
-/* Notes_detail.css 또는 VideoList.css 에 추가
-*/
-
 /* [기능 2] 추천 버튼 스타일 (기존 + 버튼과 구별) */
 .nd-panel-title .nd-add-btn.recommend {
     width: auto; /* 자동 너비 */
     padding: 4px 10px;
     font-size: 13px;
     font-weight: 500;
+
+    /* ▼▼▼ [수정 1] '추천' 버튼을 오른쪽 끝으로 밀기 ▼▼▼ */
+    margin-left: auto;
+    /* ▲▲▲ [수정 1] ▲▲▲ */
 }
 .nd-panel-title .nd-add-btn.recommend:disabled {
     opacity: 0.7;
@@ -78,7 +79,9 @@
 
 /* 2. '영상' 타이틀이 남는 공간을 모두 차지 (왼쪽 정렬 효과) */
 .nd-panel-title > span {
-    flex-grow: 1;
+    /* ▼▼▼ [수정 2] 'margin-left: auto'가 작동하도록 flex-grow 제거 ▼▼▼ */
+    /* flex-grow: 1; */
+    /* ▲▲▲ [수정 2] ▲▲▲ */
     font-size: 16px; /* (기존과 동일하게) */
     font-weight: 600;
 }
@@ -96,14 +99,30 @@
     border: 1px solid #d1d5db; /* gray-300 */
     border-radius: 6px;
     padding: 4px 8px;
-    width: 150px; /* 입력창 너비 (조절 가능) */
+    width: 155px; /* 입력창 너비 (조절 가능) */
     line-height: 1.5;
+
+    /* ▼▼▼ [추가됨] 아이콘 버튼과 높이를 맞춤 (약 30px) ▼▼▼ */
+    height: 30px;
+    box-sizing: border-box;
+    /* ▲▲▲ [추가됨] ▲▲▲ */
+    margin-top: 8px;
+}
+
+#nd-add-btn-keyword{
+    margin-top: 8px;
 }
 
 /* 5. '검색' 버튼 스타일 (기존 .recommend와 유사하게) */
 .nd-panel-title .nd-add-btn.keyword {
-    width: auto;
-    padding: 4px 10px;
+    /* ▼▼▼ [수정 3] 아이콘 버튼으로 수정 ▼▼▼ */
+    width: 30px; /* 너비 고정 */
+    height: 30px; /* 높이 고정 */
+    padding: 0; /* 패딩 제거 */
+    display: grid; /* 아이콘 중앙 정렬 */
+    place-items: center; /* 아이콘 중앙 정렬 */
+    /* ▲▲▲ [수정 3] ▲▲▲ */
+
     font-size: 13px;
     font-weight: 500;
 
@@ -114,6 +133,14 @@
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* ▼▼▼ [수정 4] '검색' 버튼 내부 아이콘 크기 지정 ▼▼▼ */
+.nd-panel-title .nd-add-btn.keyword img {
+    width: 16px;
+    height: 16px;
+}
+/* ▲▲▲ [수정 4] ▲▲▲ */
+
 
 /* 6. '검색' 버튼 비활성화/호버 (기존 버튼들과 통일) */
 .nd-panel-title .nd-add-btn.keyword:hover {
