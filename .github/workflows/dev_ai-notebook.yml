@@ -83,28 +83,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Gradle 실행 권한을 부여합니다. (중요!)
       - name: chmod gradlew
         run: chmod +x ./gradlew
 
-      # Gradle로 빌드를 진행합니다. (테스트는 생략해서 속도를 높입니다.)
+      # bootJar만 실행해서 실행 가능한 JAR 하나만 깔끔하게 만듭니다.
       - name: Build with Gradle
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean bootJar
 
+      # 빌드된 여러 JAR 중 'plain'이 안 붙은 진짜 하나만 골라서 업로드합니다.
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/build/libs/*.jar'
+          path: build/libs/*[!plain].jar
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
+      # 위에서 올린 진짜 JAR 하나만 내려받습니다.
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
@@ -115,9 +113,9 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'AI-NoteBook'
-          slot-name: 'Production'
-          package: '*.jar'
-          # Azure에서 생성해준 publish-profile 정보는 그대로 유지됩니다.
-          # 아래 줄을 새로 추가합니다! (방금 등록한 Secret 이름)
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          
+          # 내려받은 곳(현재 폴더)에 JAR가 하나뿐이므로 그냥 *.jar라고 써도 됩니다!
+          package: '*.jar'
+
+
+
