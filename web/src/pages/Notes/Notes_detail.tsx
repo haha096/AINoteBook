@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "";
 
 export default function NoteDetail() {
     const { id } = useParams<{ id: string }>();

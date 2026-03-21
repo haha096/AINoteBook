@@ -15,7 +15,7 @@ type Note = {
     sources?: number;
 };
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "";
 
 export default function Notes_main() {
     const [notes, setNotes] = useState<Note[]>([]);
