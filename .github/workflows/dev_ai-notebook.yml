@@ -118,4 +118,6 @@ jobs:
           slot-name: 'Production'
           package: '*.jar'
           # Azure에서 생성해준 publish-profile 정보는 그대로 유지됩니다.
+          # 아래 줄을 새로 추가합니다! (방금 등록한 Secret 이름)
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           
