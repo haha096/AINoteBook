@@ -14,7 +14,13 @@ import whisper
 #deactivate
 
 print("[INFO] Whisper 모델을 로드합니다... (small)")
-WHISPER_MODEL = whisper.load_model("small")
+WHISPER_MODEL = None
+
+def get_whisper_model():
+    global WHISPER_MODEL
+    if WHISPER_MODEL is None:
+        WHISPER_MODEL = whisper.load_model("small", download_root="/root/.cache/whisper")
+    return WHISPER_MODEL
 print("[INFO] Whisper 모델 로드 완료.")
 
 # --- 2. Flask 앱 생성 ---
@@ -41,7 +47,7 @@ def transcribe_audio(audio_path: Path) -> str:
     print(f"[INFO] 음성 인식 시작: {audio_path}")
 
     # 전역 모델을 사용하여 음성 인식
-    result = WHISPER_MODEL.transcribe(str(audio_path), verbose=True)
+    result = get_whisper_model().transcribe(str(audio_path), verbose=True)
     text = result.get("text", "").strip()
     return text
 
@@ -55,8 +61,7 @@ def run_transcription():
     if not url:
         return jsonify({"error": "URL이 제공되지 않았습니다."}), 400
 
-    base_dir = Path(__file__).parent
-    downloads_dir = base_dir / "downloads"
+    downloads_dir = Path("/tmp/downloads")
 
     try:
         # 2. 오디오 다운로드 (youtube-stt.py의 main과 동일)

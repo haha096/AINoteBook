@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class MainController {
-    @GetMapping("/")
+    @GetMapping({"/", "/login", "/signup", "/notes", "/notes/**"})
     public String index() {
-        // "static/index.html"로 강제 연결해버리는 마법입니다.
         return "forward:/index.html";
     }
 }

@@ -19,10 +19,13 @@ RUN pip3 install --no-cache-dir torch --index-url https://download.pytorch.org/w
 # 4. 나머지 파이썬 라이브러리 설치
 RUN pip3 install --no-cache-dir flask yt-dlp openai-whisper --break-system-packages
 
-# 5. 파일들 복사
+# 5. Whisper 모델 미리 다운로드 (빌드할 때 한 번만!)
+RUN python3 -c "import whisper; whisper.load_model('small', download_root='/root/.cache/whisper')"
+
+# 6. 파일들 복사
 COPY build/libs/*.jar app.jar
 COPY youtube-stt/app.py app.py
 COPY youtube-stt/youtube-stt.py youtube-stt.py
 
-# 6. 자바와 파이썬 동시에 실행
+# 7. 자바와 파이썬 동시에 실행
 CMD python3 app.py & java -jar /app.jar

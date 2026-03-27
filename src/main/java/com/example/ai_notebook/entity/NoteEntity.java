@@ -27,6 +27,6 @@ public class NoteEntity {
     @JsonIgnore
     private UserEntity user;
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<NoteSourceEntity> sources = new ArrayList<>();
 }
