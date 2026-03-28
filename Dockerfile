@@ -3,6 +3,8 @@
 #
 #ENTRYPOINT ["top", "-b"]
 
+COPY youtube-stt/cookies.txt cookies.txt
+
 # 1. 자바 17 환경 준비
 FROM eclipse-temurin:17-jdk
 

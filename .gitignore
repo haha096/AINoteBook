@@ -41,3 +41,6 @@ out/
 youtube-stt/.venv/
 youtube-stt/downloads/
 __pycache__/
+
+# Cookies
+youtube-stt/cookies.txt

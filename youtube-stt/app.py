@@ -34,6 +34,7 @@ def download_audio(url: str, out_dir: Path) -> Path:
         "format": "bestaudio/best",
         "outtmpl": str(out_dir / "%(id)s.%(ext)s"),
         "noplaylist": True,
+        "cookiefile": "/cookies.txt",
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
