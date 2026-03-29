@@ -34,7 +34,7 @@ def download_audio(url: str, out_dir: Path) -> Path:
         "format": "bestaudio/best",
         "outtmpl": str(out_dir / "%(id)s.%(ext)s"),
         "noplaylist": True,
-        "cookiefile": "/cookies.txt",
+        "nocheckcertificate": True,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -87,4 +87,4 @@ def run_transcription():
 if __name__ == "__main__":
     # 5001번 포트에서 서버 실행 (다른 번호도 가능)
     # debug=True는 개발 중 유용합니다.
-    app.run(port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

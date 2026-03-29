@@ -3,31 +3,32 @@
 #
 #ENTRYPOINT ["top", "-b"]
 
-COPY youtube-stt/cookies.txt cookies.txt
-
 # 1. 자바 17 환경 준비
 FROM eclipse-temurin:17-jdk
 
-# 2. 파이썬과 음성 분석 도구(ffmpeg) 설치
+# 2. 필수 패키지 및 Node.js(유튜브 암호 해독용) 설치
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     ffmpeg \
+    curl \
+    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. 파이토치를 'CPU 전용'으로 아주 가볍게 설치
-RUN pip3 install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu --break-system-packages
+# 3. yt-dlp '최신 버전' 강제 설치 (매우 중요)
+RUN pip3 install --no-cache-dir flask openai-whisper --break-system-packages
 
-# 4. 나머지 파이썬 라이브러리 설치
-RUN pip3 install --no-cache-dir flask yt-dlp openai-whisper --break-system-packages
-
-# 5. Whisper 모델 미리 다운로드 (빌드할 때 한 번만!)
+# 4. Whisper 모델 로드
 RUN python3 -c "import whisper; whisper.load_model('small', download_root='/root/.cache/whisper')"
 
-# 6. 파일들 복사
+# 5. 작업 디렉토리 설정 및 파일 복사
+WORKDIR /app
 COPY build/libs/*.jar app.jar
 COPY youtube-stt/app.py app.py
 COPY youtube-stt/youtube-stt.py youtube-stt.py
 
-# 7. 자바와 파이썬 동시에 실행
-CMD python3 app.py & java -jar /app.jar
+# 6. 보안 권한 설정
+
+# 7. 실행 (포트 5001 오픈 확인)
+CMD python3 app.py & java -jar app.jar
